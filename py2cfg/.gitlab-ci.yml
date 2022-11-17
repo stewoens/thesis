@@ -1,0 +1,9 @@
+image: python:latest
+
+generaltester:
+  script:
+  - apt-get update && apt-get -y install graphviz
+  - pip3 install astor graphviz
+  - make
+  - cd tests
+  - python3 test_model.py
