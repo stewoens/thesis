@@ -56,25 +56,25 @@ def parse_file(filename):
         if isinstance(node, ast.Name):
             json_node['value'] = node.id
         elif isinstance(node, ast.Num):
-            json_node['value'] = str(node.n)
+            json_node['value'] = unicode(node.n)
         elif isinstance(node, ast.Str):
             json_node['value'] = node.s.decode('utf-8')
         elif isinstance(node, ast.alias):
-            json_node['value'] = str(node.name)
+            json_node['value'] = unicode(node.name)
             if node.asname:
                 children.append(gen_identifier(node.asname))
         elif isinstance(node, ast.FunctionDef):
-            json_node['value'] = str(node.name)
+            json_node['value'] = unicode(node.name)
         elif isinstance(node, ast.ClassDef):
-            json_node['value'] = str(node.name)
+            json_node['value'] = unicode(node.name)
         elif isinstance(node, ast.ImportFrom):
             if node.module:
-                json_node['value'] = str(node.module)
+                json_node['value'] = unicode(node.module)
         elif isinstance(node, ast.Global):
             for n in node.names:
                 children.append(gen_identifier(n))
         elif isinstance(node, ast.keyword):
-            json_node['value'] = str(node.arg)
+            json_node['value'] = unicode(node.arg)
         
 
         # Process children.
@@ -146,6 +146,6 @@ if __name__ == "__main__":
     if len(sys.argv) != 2:
         PrintUsage()
     try:
-        print((parse_file(sys.argv[1])))
+        print(parse_file(sys.argv[1]))
     except (UnicodeEncodeError, UnicodeDecodeError):
         pass
