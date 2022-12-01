@@ -30,7 +30,7 @@ from _ast import (
     Try,
     ExceptHandler,
 )  # type: ignore
-from py2cfg.model import Block, TryBlock, Link, CFG, FuncBlock
+from model import Block, TryBlock, Link, CFG, FuncBlock
 
 
 def invert(
@@ -168,9 +168,10 @@ class CFGBuilder(ast.NodeVisitor):
         self.cfg.entryblock = self.current_block
         # Actual building of the CFG is done here.
         self.visit(tree)
-        mylist = self.create_jsondata(self.cfg.entryblock, set(),mylist=[])
-        self.clean_cfg(self.cfg.entryblock, set())
         
+        
+        self.clean_cfg(self.cfg.entryblock, set())
+        mylist = self.create_jsondata(self.cfg.entryblock, set(),mylist=[])
         #mylist = self.create_jsondata(self.cfg.entryblock, set(),mylist=[])
         if mylist is None:
             print("heres the problem!")

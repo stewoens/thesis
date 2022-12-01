@@ -3,7 +3,6 @@
 import sys
 import json as json
 import ast
-import py2cfg.builder
 
 
 def PrintUsage():
@@ -23,7 +22,7 @@ def read_file_to_string(filename):
 def parse_file(filename):
     global c, d
     tree = ast.parse(read_file_to_string(filename), filename)
-    
+
     
     
     json_tree = []
