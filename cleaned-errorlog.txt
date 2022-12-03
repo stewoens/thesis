@@ -1,3 +1,0 @@
-data\accumulo\pyaccumulo\version.py all issues... new test in new file
-C:/Users/ninas/OneDrive/Documents/UNI/Productive-Bachelors/data\CoreSecurity\impacket\impacket\examples\remcomsvc.py unexpected EOF while parsing (<unknown>, line 1669)
-C:/Users/ninas/OneDrive/Documents/UNI/Productive-Bachelors/data\dropbox\pyston\test\tests\try_continue.py
