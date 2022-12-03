@@ -2,10 +2,10 @@ from py2cfg.builder import CFGBuilder
 import json
 import os
 
-absolute_path = r"C:/Users/ninas/OneDrive/Documents/UNI/Productive-Bachelors/data"
+absolute_path = r"C:/Users/ninas/OneDrive/Documents/UNI/Productive-Bachelors/DATA/data3"
 #absolute_path = r"C:/Users/ninas/OneDrive/Documents/UNI/Productive-Bachelors/py2cfg/examples"
 name = "ninatest"
-with open(f'{name}.json', 'w') as fjson, open('errorlog.txt', 'w') as errorlog:
+with open(f'OUTPUT/{name}.json', 'w') as fjson, open('OUTPUT/errorlog.txt', 'w') as errorlog:
         for root, _, files in os.walk(absolute_path):
             for file in files:
                 with open(os.path.join(root, file), "r",encoding='cp437') as fpy:
