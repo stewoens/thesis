@@ -3,7 +3,6 @@
 import sys
 import json as json
 import ast
-import py2cfg.builder
 
 
 def PrintUsage():
@@ -57,8 +56,8 @@ def parse_file(filename):
             json_node['value'] = node.id
         elif isinstance(node, ast.Num):
             json_node['value'] = str(node.n)
-        elif isinstance(node, ast.Str):
-            json_node['value'] = node.s.decode('utf-8')
+        elif isinstance(node, ast.Str): 
+            json_node['value'] = node.s
         elif isinstance(node, ast.alias):
             json_node['value'] = str(node.name)
             if node.asname:
@@ -94,14 +93,12 @@ def parse_file(filename):
             if node.optional_vars:
                 children.append(traverse(node.optional_vars))
             children.append(traverse_list(node.body, 'body'))
-        elif isinstance(node, ast.TryExcept):
+        elif isinstance(node, ast.Try):
             children.append(traverse_list(node.body, 'body'))
             children.append(traverse_list(node.handlers, 'handlers'))
+            children.append(traverse_list(node.finalbody, 'finalbody'))
             if node.orelse:
                 children.append(traverse_list(node.orelse, 'orelse'))
-        elif isinstance(node, ast.TryFinally):
-            children.append(traverse_list(node.body, 'body'))
-            children.append(traverse_list(node.finalbody, 'finalbody'))
         elif isinstance(node, ast.arguments):
             children.append(traverse_list(node.args, 'args'))
             children.append(traverse_list(node.defaults, 'defaults'))
@@ -142,10 +139,8 @@ def parse_file(filename):
     traverse(tree)
     return json.dumps(json_tree, separators=(',', ':'), ensure_ascii=False)
 
-if __name__ == "__main__":
-    if len(sys.argv) != 2:
-        PrintUsage()
-    try:
-        print((parse_file(sys.argv[1])))
-    except (UnicodeEncodeError, UnicodeDecodeError):
-        pass
+# if __name__ == "__main__":
+#     if len(sys.argv) != 2:
+#         PrintUsage()
+# print(parse_file(sys.argv[1]))
+        
