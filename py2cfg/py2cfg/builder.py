@@ -168,10 +168,10 @@ class CFGBuilder(ast.NodeVisitor):
         self.cfg.entryblock = self.current_block
         # Actual building of the CFG is done here.
         self.visit(tree)
-        mylist = self.create_jsondata(self.cfg.entryblock, set(),mylist=[])
-        self.clean_cfg(self.cfg.entryblock, set())
         
-        #mylist = self.create_jsondata(self.cfg.entryblock, set(),mylist=[])
+        #clean cfg from empty blocks
+        self.clean_cfg(self.cfg.entryblock, set())
+        mylist = self.create_jsondata(self.cfg.entryblock, set(),mylist=[])
         if mylist is None:
             print("heres the problem!")
         
