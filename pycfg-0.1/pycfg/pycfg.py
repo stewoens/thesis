@@ -437,7 +437,6 @@ def get_cfg(pythonfile):
         if v.calls:
             g[at]['calls'] = v.calls
         g[at]['function'] = cfg.functions_node[v.lineno()]
-        print(g) #my line... what is g?
     return (g, cfg.founder.ast_node.lineno, cfg.last_node.ast_node.lineno)
 
 def compute_flow(pythonfile):
