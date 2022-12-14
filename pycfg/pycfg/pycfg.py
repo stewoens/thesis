@@ -16,7 +16,7 @@ class CFGNode(dict):
     cache = {}
     stack = []
     def __init__(self, parents=[], ast=None):
-        assert type(parents) is list
+        # assert type(parents) is list, "parents must be a list, not %s" % self.to_json()
         self.parents = parents
         self.calls = []
         self.children = []
@@ -24,6 +24,7 @@ class CFGNode(dict):
         self.rid  = CFGNode.registry
         CFGNode.cache[self.rid] = self
         CFGNode.registry += 1
+        assert type(parents) is list, "parents must be a list, not %s" % self.lineno()
 
     def lineno(self):
         return self.ast_node.lineno if hasattr(self.ast_node, 'lineno') else 0
@@ -114,10 +115,18 @@ class PyCFG:
         return ast.parse(src)
 
     def walk(self, node, myparents):
-        if node is None: return
+        if node is None: 
+            print("node is none: ")
+            return
         fname = "on_%s" % node.__class__.__name__.lower()
+        print("current Node: ", fname)
+        print("has Attribute?: ",hasattr(self, fname))
         if hasattr(self, fname):
             fn = getattr(self, fname)
+            print('myparents in walk (1):', myparents)
+            print('node before error: ',node)
+            print("myparents before error: ", myparents)
+            print("about to enter failure....")
             v = fn(node, myparents)
             return v
         else:
@@ -229,6 +238,7 @@ class PyCFG:
         ast.copy_location(_test_node.ast_node, node.test)
         test_node = self.walk(node.test, [_test_node])
         g1 = test_node
+        print("testnode (2):", g1)
         for n in node.body:
             g1 = self.walk(n, g1)
         g2 = test_node
@@ -282,9 +292,15 @@ class PyCFG:
         return self.walk(node.value, p)
 
     def on_return(self, node, myparents):
+        print("entering return")
         parent = myparents[0]
-
+        
+        print("parents: ", myparents)
+        print("parent: ", parent)
+        print("nodevalue: ", node.value)
+        print("node: ", node)
         val_node = self.walk(node.value, myparents)
+        print("list of parents: ", val_node) #is none
         # on return look back to the function definition.
         while not hasattr(parent, 'return_nodes'):
             parent = parent.parents[0]
