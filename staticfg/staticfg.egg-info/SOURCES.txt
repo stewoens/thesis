@@ -1,0 +1,10 @@
+README.md
+setup.py
+staticfg/__init__.py
+staticfg/builder.py
+staticfg/model.py
+staticfg.egg-info/PKG-INFO
+staticfg.egg-info/SOURCES.txt
+staticfg.egg-info/dependency_links.txt
+staticfg.egg-info/requires.txt
+staticfg.egg-info/top_level.txt
