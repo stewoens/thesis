@@ -16,6 +16,7 @@ with open(f'OUTPUT/{name}.json', 'w') as fjson, open('OUTPUT/errorlog.txt', 'w')
                         else:
                             json_object= json.dumps(mylist, indent=4)
                             fjson.write(json_object)
+                            fjson.write("New .py file")
                     except Exception as e:
                         errorlog.write(fpy.name + " " + str(e) + "\n")
         

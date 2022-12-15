@@ -1,8 +1,7 @@
 #!/usr/bin/python3
-
-print("\nEnter your Caesar key in numeric form (1-25): ")
-key: int = int(input())
 class NinaTest():
+    print("\nEnter your Caesar key in numeric form (1-25): ")
+    key: int = int(input())
     print("\nEnter 1 for encryption, and 0 for decryption: ")
     mode: int = int(input())
 
