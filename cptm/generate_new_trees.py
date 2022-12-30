@@ -15,6 +15,17 @@ from utils import file_tqdm
 
 logging.basicConfig(level=logging.INFO)
 
+def get_typelist(ast):
+    typelist =[]
+    for _, node in enumerate(ast):
+        if "type" in node:
+            if node["type"] not in typelist:
+               typelist.append(node["type"])
+    return typelist
+
+            
+        
+    
 
 def convert(ast):
     increase_by = {}  # count of how many idx to increase the new idx by:
@@ -72,11 +83,17 @@ def main():
     args = parser.parse_args()
     if os.path.exists(args.out_fp):
         os.remove(args.out_fp)
+    
+    x = True
 
     logging.info("Loading asts from: {}".format(args.input_fp))
     with open(args.input_fp, "r") as f, open(args.out_fp, "w") as fout:
         for line in file_tqdm(f):
             dp = json.loads(line.strip())
+            if x == True:
+                print(dp)
+                x = False
+                #updated_dp= interfere(dp)
             print(json.dumps(convert(dp)), file=fout)
     logging.info("Wrote dps to: {}".format(args.out_fp))
 
