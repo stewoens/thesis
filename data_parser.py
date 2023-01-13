@@ -7,7 +7,7 @@ test2 = r"C:/Users/ninas/OneDrive/Documents/UNI/Productive-Bachelors/DATA/data3/
 output ='OUTPUT/my_dataset'
 
 def prep_path(path):
-    x = u'\\\\?\\' + path.replace('/','\\')
+    x = '\\\\?\\' + path.replace('/','\\')
     return x
 
 def test_path_prep():
@@ -28,14 +28,20 @@ def test_output():
 
 def data_parser():
     i =0
-    for root, _, files in os.walk(data):
-        for file in files:
-            path = prep_path(os.path.join(root, file))
-            with open(output,'w') as out, open(path, 'r', )as f:
-                print >>out, parse_file(path)
-                s = "done with file " + str(i)
-                print s
-                i = i+1
+    with open(output,'w') as out:
+        for root, _, files in os.walk(data):
+            for file in files:
+                #test
+                # if i <140000:
+                #     i = i+1
+                #     print i
+                #     continue
+                path = prep_path(os.path.join(root, file))
+                with open(path, 'r', )as f:
+                    print >>out, parse_file(path)
+                    s = "done with file " + str(i)
+                    print s
+                    i = i+1
     print "finished :\)"
     return
 
