@@ -1,0 +1,12 @@
+\babel@toc {english}{}\relax 
+\babel@toc {ngerman}{}\relax 
+\babel@toc {english}{}\relax 
+\contentsline {chapter}{\numberline {1}Introduction}{4}{chapter.1}%
+\contentsline {section}{\numberline {1.1}Background and Motivation}{4}{section.1.1}%
+\contentsline {chapter}{\numberline {2}Foundations}{6}{chapter.2}%
+\contentsline {section}{\numberline {2.1}Transformers}{6}{section.2.1}%
+\contentsline {chapter}{\numberline {3}Generating data}{7}{chapter.3}%
+\contentsline {section}{\numberline {3.1}Control Flow Graph}{7}{section.3.1}%
+\contentsline {section}{\numberline {3.2}Building the CFG file from py2cfg}{7}{section.3.2}%
+\contentsline {section}{\numberline {3.3}Traversing the CFG}{7}{section.3.3}%
+\providecommand \tocbasic@end@toc@file {}\tocbasic@end@toc@file 

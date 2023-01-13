@@ -1,0 +1,70 @@
+\documentclass[
+	english,
+	ruledheaders=section,
+	class=report,
+	thesis={type=bachelor},
+	accentcolor=9c,
+	custommargins=true,
+	marginpar=false,
+	%BCOR=5mm,%Bindekorrektur, falls notwendig
+	parskip=half-,
+	fontsize=11pt,
+%	logofile=example-image, %Falls die Logo Dateien nicht vorliegen
+]{tudapub}
+
+
+\usepackage[ngerman, main=english]{babel}
+\usepackage[autostyle]{csquotes}
+
+\usepackage{microtype}
+
+\usepackage[backend=biber, style=ieee]{biblatex}  
+\addbibresource{bibliboo.bib}
+
+
+\usepackage{tabularx}  
+
+% \usepackage{booktabs}
+% \usepackage{pifont}
+\newcommand*{\FeatureTrue}{\ding{52}}
+\newcommand*{\FeatureFalse}{\ding{56}}
+
+\begin{document}
+
+\Metadata{
+	title=my thesis,
+	author=Nina Stewens
+}
+
+\title{my thesis}
+\subtitle{short description}
+\author[N. Stewens]{N. Stewens}
+\birthplace{Halle Saale}
+\reviewer{Gutachter 1 \and Gutachter 2 \and noch einer}
+
+\department{ce}
+\institute{Institut}
+\group{Arbeitsgruppe}
+
+\submissiondate{\today}
+\examdate{\today}
+
+% Hinweis zur Lizenz: später in copy
+
+\maketitle
+\affidavit
+
+\tableofcontents
+
+% \include{help}
+
+
+
+ \include{introduction}
+ \include{foundations}
+ \include{generating_data}
+%\include{notes}
+
+
+\printbibliography
+\end{document}

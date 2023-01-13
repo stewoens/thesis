@@ -62,7 +62,8 @@
   </rdf:Description> 
   <rdf:Description rdf:about="" xmlns:dc="http://purl.org/dc/elements/1.1/"> 
    <dc:format>application/pdf</dc:format> 
-   <dc:title><rdf:Alt><rdf:li xml:lang="x-default">Problemstatement</rdf:li></rdf:Alt></dc:title>
+   <dc:title><rdf:Alt><rdf:li xml:lang="x-default">my thesis</rdf:li></rdf:Alt></dc:title>
+   <dc:creator><rdf:Seq><rdf:li>Nina Stewens</rdf:li></rdf:Seq></dc:creator>
    <dc:publisher><rdf:Bag><rdf:li>TU Darmstadt</rdf:li></rdf:Bag></dc:publisher>
   </rdf:Description> 
   <rdf:Description rdf:about="" xmlns:prism="http://prismstandard.org/namespaces/basic/2.2/"> 
@@ -75,15 +76,15 @@
   </rdf:Description> 
   <rdf:Description rdf:about="" xmlns:xmp="http://ns.adobe.com/xap/1.0/"> 
    <xmp:CreatorTool>LaTeX using TUDa-CI</xmp:CreatorTool> 
-   <xmp:ModifyDate>2022-07-27T11:20:25+02:00</xmp:ModifyDate> 
-   <xmp:CreateDate>2022-07-27T11:20:25+02:00</xmp:CreateDate> 
-   <xmp:MetadataDate>2022-07-27T11:20:25+02:00</xmp:MetadataDate> 
+   <xmp:ModifyDate>2023-01-10T17:04:50+01:00</xmp:ModifyDate> 
+   <xmp:CreateDate>2023-01-10T17:04:50+01:00</xmp:CreateDate> 
+   <xmp:MetadataDate>2023-01-10T17:04:50+01:00</xmp:MetadataDate> 
   </rdf:Description> 
   <rdf:Description rdf:about="" xmlns:xmpRights = "http://ns.adobe.com/xap/1.0/rights/"> 
   </rdf:Description> 
   <rdf:Description rdf:about="" xmlns:xmpMM="http://ns.adobe.com/xap/1.0/mm/"> 
-   <xmpMM:DocumentID>uuid:5C8E4A03-C871-CEB5-56DC-B1B067B98BA4</xmpMM:DocumentID> 
-   <xmpMM:InstanceID>uuid:0EB661D1-F9AE-4177-CAB9-AF13A3C34F75</xmpMM:InstanceID> 
+   <xmpMM:DocumentID>uuid:DF005B57-2A06-8753-7167-92D8CE935460</xmpMM:DocumentID> 
+   <xmpMM:InstanceID>uuid:208288C9-FCEE-5DB4-90F7-FAEB61BD1FD8</xmpMM:InstanceID> 
   </rdf:Description> 
  </rdf:RDF> 
 </x:xmpmeta> 

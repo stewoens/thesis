@@ -1,0 +1,28 @@
+\chapter{Notes}
+
+This is just to track my progress.
+
+
+i want to use py2cfg and write my own converter to json. all of the info is there, it is just utilized differently. I can do this using their info and creating my own json file depending on their info.
+how early in the processing chain can I access the info of the cfg? as early as possible as i dont want to include any info of the visualization.
+
+try first: print ast and see what looks like/type of file/ input
+
+
+tree.fields =  ('body', 'type\_ignores') (tuple, both type str)
+
+cfgentryblock.get\_source() in builder.build gives me the actual line of code so can base on that.
+
+need next: \newline
+way to iterate through code  \newline
+find children and edges
+
+line 387 in model. py handles edges in the visualization. not sure if theyre decided earlier or later.
+
+can see edges being used in cfg cleanup so edges must exist beforehand hence i dont have to work with visualization. 
+ 
+next step. find out how to convert info you get into json file? what style is json file again?
+can the edges be translated into children of nodes of json?
+do we use the type for json file? like "for" and "if" etc
+
+
