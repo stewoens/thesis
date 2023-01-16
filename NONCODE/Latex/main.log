@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.24 (MiKTeX 22.12) (preloaded format=pdflatex 2023.1.10)  10 JAN 2023 17:04
+This is pdfTeX, Version 3.141592653-2.6-1.40.24 (MiKTeX 22.12) (preloaded format=pdflatex 2023.1.10)  13 JAN 2023 19:03
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -1029,7 +1029,7 @@ LaTeX Info: Redefining \oldstylenums on input line 32.
 Package csquotes Info: Checking for multilingual support...
 Package csquotes Info: ... found 'babel' package.
 
-(main.aux (introduction.aux) (foundations.aux) (generating_data.aux))
+(main.aux (introduction.aux) (generating_data.aux))
 \openout1 = `main.aux'.
 
 LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 32.
@@ -1375,23 +1375,21 @@ LaTeX Font Info:    Font shape `T1/XCharter-TLF/m/it' will be
 
 
 ]) [5]
-\openout2 = `foundations.aux'.
-
- (foundations.tex
 chapter 2.
-) [6
+LaTeX Font Info:    Font shape `T1/Roboto-LF/b/n' aliased to
+(Font)              `T1/Roboto-LF/bold/n' on input line 84.
+LaTeX Font Info:    Font shape `T1/Roboto-LF/bold/n' will be
+(Font)              scaled to size 12.0pt on input line 84.
+[6
 
 
 
-
-]
+] [7]
 \openout2 = `generating_data.aux'.
 
  (generating_data.tex
 chapter 3.
-) [7
-
-
+) [8
 
 
 ]
@@ -1415,11 +1413,11 @@ Package tudapub Warning: You did not provide a Label for key discussion.
 (tudapub)                Either you need to recompile your document or add a
 (tudapub)                label using \IMRADlabel.
 
-[8
+[9
 
 
 
-] (main.aux (introduction.aux) (foundations.aux) (generating_data.aux))
+] (main.aux (introduction.aux) (generating_data.aux))
 Package rerunfilecheck Info: File `main.out' has not changed.
 (rerunfilecheck)             Checksum: D41D8CD98F00B204E9800998ECF8427E;0.
 Package logreq Info: Writing requests to 'main.run.xml'.
@@ -1427,11 +1425,11 @@ Package logreq Info: Writing requests to 'main.run.xml'.
 
  ) 
 Here is how much of TeX's memory you used:
- 32904 strings out of 476406
- 675190 string characters out of 2789567
- 1864787 words of memory out of 3000000
- 52632 multiletter control sequences out of 15000+600000
- 594901 words of font info for 142 fonts, out of 8000000 for 9000
+ 32910 strings out of 476406
+ 675039 string characters out of 2789567
+ 1863787 words of memory out of 3000000
+ 52629 multiletter control sequences out of 15000+600000
+ 601177 words of font info for 150 fonts, out of 8000000 for 9000
  1143 hyphenation exceptions out of 8191
  122i,19n,120p,10653b,2473s stack positions out of 10000i,1000n,20000p,200000b,80000s
 {C:/Users/ninas/AppData/Local/Programs/MiKTeX/fonts/enc/dvips/xcharter/xch_ry
@@ -1442,9 +1440,9 @@ google/roboto/Roboto-Bold.pfb><C:/Users/ninas/AppData/Local/Programs/MiKTeX/fon
 ts/type1/google/roboto/Roboto-Regular.pfb><C:/Users/ninas/AppData/Local/Program
 s/MiKTeX/fonts/type1/public/xcharter/XCharter-Italic.pfb><C:/Users/ninas/AppDat
 a/Local/Programs/MiKTeX/fonts/type1/public/xcharter/XCharter-Roman.pfb>
-Output written on main.pdf (8 pages, 698035 bytes).
+Output written on main.pdf (9 pages, 703507 bytes).
 PDF statistics:
- 129 PDF objects out of 1000 (max. 8388607)
- 21 named destinations out of 1000 (max. 500000)
- 37970 words of extra memory for PDF output out of 42996 (max. 10000000)
+ 147 PDF objects out of 1000 (max. 8388607)
+ 25 named destinations out of 1000 (max. 500000)
+ 42090 words of extra memory for PDF output out of 42996 (max. 10000000)
 
