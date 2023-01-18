@@ -50,16 +50,17 @@ def parse_file_2cfg(filename):
         pos = len(json_cfg)
         json_node = {}
         json_cfg.append(json_node)
-        json_node['type'] = type(node).__name__
+        json_node['statements'] = type(node).__name__
+        
+        x = type(node).__name__
+        print x
+        
         children = []
         for child in ast.iter_child_nodes(node):
             children.append(traverse(child))
-            print child 
-            return
-        x = type(node).__name__
             
         if (len(children) != 0):
-            print "hello!!!"
+            #print "hello!!!"
             json_node['children'] = children
         return pos
        
