@@ -1,7 +1,0 @@
-graphviz>=0.11
-astor>=0.8.1
-pudb>=2019
-websocket-server>=0.4
-watchdog
-flask
-requests
