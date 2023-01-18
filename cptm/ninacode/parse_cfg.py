@@ -19,13 +19,13 @@ def read_file_to_string(filename):
     f.close()
     return s
 
-def parse_file(filename):
+def parse_file_2cfg(filename):
     global c, d
     tree = ast.parse(read_file_to_string(filename), filename)
     
     
     
-    json_tree = []
+    json_cfg = []
     def gen_identifier(identifier, node_type = 'identifier'):
         pos = len(json_tree)
         json_node = {}
@@ -47,10 +47,25 @@ def parse_file(filename):
         return pos
         
     def traverse(node):
+        pos = len(json_cfg)
+        json_node = {}
+        json_cfg.append(json_node)
+        json_node['type'] = type(node).__name__
+        children = []
+        for child in ast.iter_child_nodes(node):
+            children.append(traverse(child))
+            print child 
+            return
+        x = type(node).__name__
+            
+        if (len(children) != 0):
+            print "hello!!!"
+            json_node['children'] = children
+        return pos
        
     
     traverse(tree)
-    return json.dumps(json_tree, separators=(',', ':'), ensure_ascii=False)
+    return json.dumps(json_cfg, separators=(',', ':'), ensure_ascii=False)
 
 # if __name__ == "__main__":
 #     if len(sys.argv) != 2:
