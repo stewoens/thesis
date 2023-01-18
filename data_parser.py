@@ -34,7 +34,8 @@ def data_parser():
             for file in files:
                 #test
                 if i > 0:
-                    continue
+                     print "finished :)"
+                     return
                 path = prep_path(os.path.join(root, file))
                 with open(path, 'r', )as f:
                     print >>out, parse_file_2cfg(path)
