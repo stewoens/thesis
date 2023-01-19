@@ -3,4 +3,6 @@
 /ORIGINALS
 /py2cfg-original
 **/*.pyc
+/.vscode
+
 
