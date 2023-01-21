@@ -13,47 +13,54 @@ Usage:
 """)
     exit(1)
 
+class Block(object):
+    def __init__(self, id: int) -> None:
+        # Id of the block.
+        self.id = id
+        # Statements in the block.
+        self.statements: List[ast.AST] = []
+        # Calls to functions inside the block (represents context switches to
+        # some functions' CFGs).
+        self.func_calls: List[str] = []
+        # Links to predecessors in a control flow graph.
+        self.parents: List[int] = []
+        # Links to the next blocks in a control flow graph.
+        self.children: List[int] = []
+
+def setup_entry_block(node):
+    entry = Block(0)
+    entry.statements = node 
+
 def read_file_to_string(filename):
     f = open(filename, 'rt')
     s = f.read()
     f.close()
     return s
 
+
 def parse_file_2cfg(filename):
     global c, d
     tree = ast.parse(read_file_to_string(filename), filename)
     
-    
-    
     json_cfg = []
-    def gen_identifier(identifier, node_type = 'identifier'):
-        pos = len(json_tree)
-        json_node = {}
-        json_tree.append(json_node)
-        json_node['type'] = node_type
-        json_node['value'] = identifier
-        return pos
-    
-    def traverse_list(l, node_type = 'list'):
-        pos = len(json_tree)
-        json_node = {}
-        json_tree.append(json_node)
-        json_node['type'] = node_type
-        children = []
-        for item in l:
-            children.append(traverse(item))
-        if (len(children) != 0):
-            json_node['children'] = children
-        return pos
-        
+    current_pos =0
+
     def traverse(node):
+        if current_pos == 0:
+            setup_entry_block(node)
         pos = len(json_cfg)
+
+
         json_node = {}
         json_cfg.append(json_node)
         json_node['statements'] = type(node).__name__
         
         x = type(node).__name__
-        print x
+        if 'lineno' in node._attributes:
+            y = getattr(node, 'lineno')
+            print y
+        else: print x
+       
         
         children = []
         for child in ast.iter_child_nodes(node):
