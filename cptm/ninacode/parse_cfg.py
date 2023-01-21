@@ -13,23 +13,6 @@ Usage:
 """)
     exit(1)
 
-class Block(object):
-    def __init__(self, id: int) -> None:
-        # Id of the block.
-        self.id = id
-        # Statements in the block.
-        self.statements: List[ast.AST] = []
-        # Calls to functions inside the block (represents context switches to
-        # some functions' CFGs).
-        self.func_calls: List[str] = []
-        # Links to predecessors in a control flow graph.
-        self.parents: List[int] = []
-        # Links to the next blocks in a control flow graph.
-        self.children: List[int] = []
-
-def setup_entry_block(node):
-    entry = Block(0)
-    entry.statements = node 
 
 def read_file_to_string(filename):
     f = open(filename, 'rt')
@@ -39,27 +22,31 @@ def read_file_to_string(filename):
 
 
 def parse_file_2cfg(filename):
-    global c, d
     tree = ast.parse(read_file_to_string(filename), filename)
     
     json_cfg = []
     current_pos =0
 
     def traverse(node):
-        if current_pos == 0:
-            setup_entry_block(node)
         pos = len(json_cfg)
-
-
         json_node = {}
         json_cfg.append(json_node)
+        children = []
+        # access the last created node and add statements to it
+        json_cfg[-1:]['statements'].append
         json_node['statements'] = type(node).__name__
         
-        x = type(node).__name__
-        if 'lineno' in node._attributes:
-            y = getattr(node, 'lineno')
-            print y
-        else: print x
+        if isinstance(node, ast.ImportFrom):
+            json
+            
+        # last thought is node an ast.AST? if yes add to statement as there wont be any other arrows from it 
+        
+        
+        # x = type(node).__name__
+        # if 'lineno' in node._attributes:
+        #     y = getattr(node, 'lineno')
+        #     print y
+        # else: print x
        
         
         children = []
@@ -75,8 +62,4 @@ def parse_file_2cfg(filename):
     traverse(tree)
     return json.dumps(json_cfg, separators=(',', ':'), ensure_ascii=False)
 
-# if __name__ == "__main__":
-#     if len(sys.argv) != 2:
-#         PrintUsage()
-# print(parse_file(sys.argv[1]))
         
