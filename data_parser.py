@@ -3,6 +3,13 @@ from cptm.ninacode.parse_cfg import parse_file_2cfg
 import os
 import ast
 
+    """
+    parse pyhon2 files to cfg with parse_cfg.py
+
+    Returns:
+        _type_: _description_
+    """
+
 data = r"C:/Users/ninas/OneDrive/Documents/UNI/Productive-Bachelors/DATA/data2"
 test = r"C:/Users/ninas/OneDrive/Documents/UNI/Productive-Bachelors/test_file.py"
 output_cfg ='OUTPUT/my_dataset_cfg'

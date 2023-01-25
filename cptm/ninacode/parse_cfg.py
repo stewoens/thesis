@@ -3,6 +3,9 @@
 import sys
 import json as json
 import ast
+    """
+    parse python2 files to json cfg ! unfinished !current project
+    """
 
 
 def PrintUsage():

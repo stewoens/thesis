@@ -1,6 +1,9 @@
 from py2cfg.builder import CFGBuilder
 import json
 import os
+    """
+    generate py2cfg json file from converted python3 files
+    """
 
 # absolute_path = r"C:/Users/ninas/OneDrive/Documents/UNI/Productive-Bachelors/DATA/data3"
 absolute_path = r"C:/Users/ninas/OneDrive/Documents/UNI/Productive-Bachelors/py2cfg/examples"
