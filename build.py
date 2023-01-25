@@ -96,7 +96,12 @@ class CFGBuilder():
 
         Args:
             tree (AST): the tree to be walked
+        return id of Block
         """
+        
+        # will a new block be generated after a specific statement or before 
+        #boolean wether can join old node or not (options are 1: add as statement 
+        #                                                  or 2: add to children (pos))
 
         for block in self.cfg:
             print block.d
