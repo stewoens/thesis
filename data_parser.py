@@ -1,6 +1,7 @@
 from DATA.parse_python import parse_file #check
 from cptm.ninacode.parse_cfg import parse_file_2cfg
 import os
+import ast
 
 data = r"C:/Users/ninas/OneDrive/Documents/UNI/Productive-Bachelors/DATA/data2"
 test = r"C:/Users/ninas/OneDrive/Documents/UNI/Productive-Bachelors/test_file.py"
@@ -51,7 +52,7 @@ def data_parser_cfg():
     print "finished :)"
     return
 
-test_output_ast()
+test_output_cfg()
 
 
 
