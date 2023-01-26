@@ -4,6 +4,7 @@ Control flow graph builder.
 import ast
 test = r"C:/Users/ninas/OneDrive/Documents/UNI/Productive-Bachelors/example.py"
 
+stmnt_types = ['Module' , 'If', 'For', 'While', 'Break', 'Continue', 'ExceptHandler', 'With']
 
 
 
@@ -12,7 +13,6 @@ def read_file_to_string(filename):
     s = f.read()
     f.close()
     return s
-
 
 
 class CFGBlock():
@@ -52,6 +52,7 @@ class CFGBuilder():
             if statement is not None:
                 self.add_statement(block, statement)
             return block
+     
         
     def add_statement(self, block, statement):
         """
@@ -66,8 +67,6 @@ class CFGBuilder():
         block.d["statements"].append(statement)
         
 
-
-    
     def build(self, tree, entry_id = 0):
         """
         Build a CFG from an AST.
@@ -86,11 +85,10 @@ class CFGBuilder():
         
         
         self.traverse(tree)
-        
         return self.cfg
         
         
-    def traverse(self,tree):
+    def traverse(self, node):
         """
         Walk along the AST to generate CFG
 
@@ -102,17 +100,25 @@ class CFGBuilder():
         # will a new block be generated after a specific statement or before 
         #boolean wether can join old node or not (options are 1: add as statement 
         #                                                  or 2: add to children (pos))
-
-        for block in self.cfg:
-            print block.d
+        pos = len(self.cfg)
+        type= node.__class__.__name__
+        
+        if type in stmnt_types:
+            print "this works"
+            for child in ast.iter_child_nodes(node):
+                self.traverse(child)
+        else:
+            self.cfg[-1].d["statements"].append(ast.dump(node))
+            
+            
+        
    
    
-   
-   
-    
 def main():
     tree = ast.parse(read_file_to_string(test), test)
     cfgb = CFGBuilder()
-    cfgb.build(tree)
+    cfg = cfgb.build(tree)
+    for block in cfg:
+        print block.d
 
 main()
