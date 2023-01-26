@@ -105,6 +105,7 @@ class CFGBuilder():
         
         if type in stmnt_types:
             print "this works"
+            
             for child in ast.iter_child_nodes(node):
                 self.traverse(child)
         else:
