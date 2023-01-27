@@ -19,10 +19,10 @@ class CFGBlock():
     """
     CFG Block.
 
-    A CFG Block contains statements, children and parents (and type?).
+    A CFG Block contains content, children and parents (and type?).
     """
     def __init__(self, id,typ):
-        dict = {"id":id, "type":typ,"statements":[],"children":[],"parents":[]}
+        dict = {"id":id, "type":typ,"content":[],"children":[],"parents":[]}
         self.d= dict
         
 
@@ -40,7 +40,7 @@ class CFGBuilder():
         self.end_lineno = 0
 
 
-    def new_block(self, typ, statement=None):
+    def new_block(self, typ, content=None):
             """
             Create a new block with a new id.
 
@@ -49,22 +49,30 @@ class CFGBuilder():
             """
             self.current_id += 1
             block = CFGBlock(id =self.current_id, typ =typ)
-            if statement is not None:
-                self.add_statement(block, statement)
+            if content is not None:
+                self.add_statement(block, content)
+            self.current_block = block
+            self.cfg.append( self.current_block)
+            
             return block
      
         
-    def add_statement(self, block, statement):
+    def add_statement(self, block, content):
         """
-        Add a statement to a block.
+        Add a content to a block.
 
         Args:
-            block: A CFGBlock object to which a statement must be added.
-            statement: An AST node representing the statement that must be
+            block: A CFGBlock object to which a content must be added.
+            content: An AST node representing the content that must be
                        added to the current block.
                        OR A STRING?
         """
-        block.d["statements"].append(statement)
+        block.d["content"].append(content)
+    
+    
+    def add_child(self, block, child):
+        if child not in block.d["children"]:
+            block.d["children"].append(child)
         
 
     def build(self, tree, entry_id = 0):
@@ -80,8 +88,7 @@ class CFGBuilder():
         """
         self.cfg = []
         self.current_id = entry_id
-        self.current_block = self.new_block(tree.__class__.__name__)
-        self.cfg.append( self.current_block)
+        #block =self.new_block(tree.__class__.__name__)
         
         
         self.traverse(tree)
@@ -97,19 +104,43 @@ class CFGBuilder():
         return id of Block
         """
         
-        # will a new block be generated after a specific statement or before 
-        #boolean wether can join old node or not (options are 1: add as statement 
+        # will a new block be generated after a specific content or before 
+        #boolean wether can join old node or not (options are 1: add as content 
         #                                                  or 2: add to children (pos))
         pos = len(self.cfg)
         type= node.__class__.__name__
         
+        # decide if the current node is Control Flow Relevant or not.
+            
         if type in stmnt_types:
-            print "this works"
+            current_block = self.new_block(type)
+            pos+=1 
+            
+            if isinstance(node, ast.For):
+                #dump target info
+                self.add_statement(current_block,ast.dump(node.target))
+                #dump iter info
+                self.add_statement(self.cfg[-1],ast.dump(node.iter))
+                print node.body
+
+            # for x in ast.iter_fields(node):
+            #     print x[0]
+                
+            #print str(ast.iter_fields(node),)
             
             for child in ast.iter_child_nodes(node):
-                self.traverse(child)
+
+                self.add_child(current_block, self.traverse(child))
+                               
         else:
-            self.cfg[-1].d["statements"].append(ast.dump(node))
+            #if the parent is a cfg node, a new node is created
+            if self.cfg[-1].d["type"] in stmnt_types:
+                current_block =self.new_block(type)
+                pos += 1
+                
+            self.add_statement(self.cfg[-1], ast.dump(node))
+            
+        return pos
             
             
         
@@ -119,7 +150,7 @@ def main():
     tree = ast.parse(read_file_to_string(test), test)
     cfgb = CFGBuilder()
     cfg = cfgb.build(tree)
-    for block in cfg:
-        print block.d
+    # for block in cfg:
+    #     print block.d
 
 main()
