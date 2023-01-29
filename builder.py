@@ -142,7 +142,7 @@ class CFGBuilder(ast.NodeVisitor):
     def try_stack(self) -> Deque[TryStackObject]:
         return self._treebuf["try_stack"]
 
-    # ---------- CFG building methods ---------- #
+# ---------- CFG building methods ---------- #
     def build(self, name: str, tree: Module, asynchr: bool = False, entry_id: int = 0) -> tuple:
         """
         Build a CFG from an AST.
@@ -209,7 +209,7 @@ class CFGBuilder(ast.NodeVisitor):
             src = src_file.read()
             return self.build_from_src(name, src)
 
-    # ---------- Graph management methods ---------- #
+# ---------- Graph management methods ---------- #
     def new_block(self, statement=None) -> Block:
         """
         Create a new block with a new id.
@@ -464,7 +464,7 @@ class CFGBuilder(ast.NodeVisitor):
             modifiedlist = self.create_jsondata(exit.target, visited,mylist)
         return modifiedlist
 
-    # ---------- AST Node visitor methods ---------- #
+# ---------- AST Node visitor methods ---------- #
 
     def visit_ClassDef(self, node: ClassDef) -> None:
         self.add_statement(self.current_block, node)
