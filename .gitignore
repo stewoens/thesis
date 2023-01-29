@@ -5,5 +5,6 @@
 /py2cfg-original
 **/*.pyc
 /.vscode
+example.py
 
 

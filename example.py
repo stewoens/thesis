@@ -1,6 +1,17 @@
 import os as os
 import ast
-import json 
+
+x =7
+
+
+if x == 7:
+    print "true"
+    for i in range(2):
+        print i
+        x = i
+else: print "false"
+
+print "love is a battlefield"
 
 # global x
 
