@@ -2,6 +2,7 @@
 Control flow graph builder.
 """
 import ast
+from typing import Dict, List, Optional, DefaultDict, Deque, Set, Union
 from my_model import Link, CFGBlock
 
 test = r"C:/Users/ninas/OneDrive/Documents/UNI/Productive-Bachelors/example.py"
@@ -58,10 +59,16 @@ class CFGBuilder():
     a program's AST and iteratively build the corresponding CFG.
     """
 
-    def __init__(self):
-        self.blocks =[]
-        self.lineno = 0
-        self.end_lineno = 0
+    def __init__(
+        self, short = True, treebuf = None
+    ):
+        self.isShort = short
+        self._callbuf = []
+        self._treebuf = defaultdict(deque) if treebuf is None else treebuf
+    
+    @property
+    def loop_stack(self):
+        return self._treebuf["loop_stack"]
         
     def new_loopguard(self):
         """
@@ -83,7 +90,7 @@ class CFGBuilder():
 
         return loopguard
     
-    def new_block(self, type=None, content=None):
+    def new_block(self, type=None, statement=None):
             """
             Create a new block with a new id.
 
@@ -92,14 +99,14 @@ class CFGBuilder():
             """
             self.current_id += 1
             block = CFGBlock(id =self.current_id, type =type)
-            if content is not None:
-                self.add_content(block, content)
+            if statement is not None:
+                self.add_statement(block, statement)
 
             self.cfg.append(block)
             
             return block
      
-    def add_content(self, block, statement):
+    def add_statement(self, block, statement):
         """
         Add a statement to a block.
 
@@ -108,7 +115,7 @@ class CFGBuilder():
             statement: An AST node representing the statement that must be
                        added to the current block.
         """
-        block.content.append(statement) 
+        block.statements.append(statement) 
         
     def add_exit(self,block,nextblock,exitcase = None): #Union[Compare, None, ast.BoolOp, ast.expr]
         """"
@@ -156,8 +163,8 @@ class CFGBuilder():
         return id of Block
         """
         
-        # will a new block be generated after a specific content or before 
-        #boolean wether can join old node or not (options are 1: add as content 
+        # will a new block be generated after a specific statement or before 
+        #boolean wether can join old node or not (options are 1: add as statement 
         #                                                  or 2: add to children (pos))
         pos = len(self.cfg)
         type= node.__class__.__name__
@@ -165,13 +172,13 @@ class CFGBuilder():
         # decide if the current node is Control Flow Relevant or not.
             
         if isinstance(node, ast.Module):
-            if self.current_block.content:
+            if self.current_block.statements:
                 mod_block = self.new_block(type)
-                self.add_content(mod_block, node)
+                self.add_statement(mod_block, node)
                 self.add_exit(self.current_block, mod_block)
                 self.current_block = mod_block
             else:
-                self.add_content(self.current_block, node)
+                self.add_statement(self.current_block, node)
             
             next_block = self.new_block()
             
@@ -218,23 +225,23 @@ class CFGBuilder():
             #     current_block = self.new_block(type)
             #     pos+=1 
             #     #dump target info
-            #     self.add_content(current_block,ast.dump(node.target))
+            #     self.add_statement(current_block,ast.dump(node.target))
             #     #dump iter info
-            #     self.add_content(self.cfg[-1],ast.dump(node.iter))
+            #     self.add_statement(self.cfg[-1],ast.dump(node.iter))
             #     print node.body
             #     for child in node.body:
             #         self.add_exit(current_block, self.traverse(child))
                     
         elif isinstance(node, ast.If):
-            if self.current_block.content:
+            if self.current_block.statements:
                 # Add the If statement at the beginning of the new block.
                 cond_block = self.new_block(type)
-                self.add_content(cond_block, node)
+                self.add_statement(cond_block, node)
                 self.add_exit(self.current_block, cond_block)
                 self.current_block = cond_block
             else:
                 # Add the If statement at the end of the current block.
-                self.add_content(self.current_block, node)
+                self.add_statement(self.current_block, node)
             if any(isinstance(node.test, T) for T in (ast.Compare, ast.Call)):
                 self.traverse(node.test)
             # Create a new block for the body of the if. (storing the True case)
@@ -269,7 +276,7 @@ class CFGBuilder():
             # current_block = self.new_block(type)
             # pos+=1 
             # #dump test info
-            # self.add_content(current_block,ast.dump(node.test))
+            # self.add_statement(current_block,ast.dump(node.test))
             
             # # have to create seperate children for each because otherwise true & false in same block
             # for child in node.body:
@@ -290,7 +297,7 @@ class CFGBuilder():
                 pos += 1
             else:current_block = self.cfg[-1]
                 
-            self.add_content(self.cfg[-1], ast.dump(node))
+            self.add_statement(self.cfg[-1], ast.dump(node))
             #general child traversing
             # for child in ast.iter_child_nodes(node):
             #     self.add_child(current_block, self.traverse(child))
