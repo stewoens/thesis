@@ -1,3 +1,8 @@
+
+import ast
+from codegen import *
+
+
 class Link(object):
     """
     Link between blocks in a control flow graph.
@@ -55,9 +60,9 @@ class CFGBlock():
 
     A CFG Block contains statement, children and parents (and type?).
     """
-    def __init__(self, id,typ):
-        dict = {"id":id, "type":typ,"statement":[],"children":[],"parents":[]}
-        self.d= dict
+    # def __init__(self, id,typ):
+    #     dict = {"id":id, "type":typ,"statement":[],"children":[],"parents":[]}
+    #     self.d= dict
         
     def __init__(self, id,type):
         # Id of the block.
@@ -75,7 +80,29 @@ class CFGBlock():
         self.exits = []
         # Function blocks within this block ???
         self.func_blocks = []
-        
+    
+    def get_source(self):
+        """
+        Get a string containing the Python source code corresponding to the
+        statements in the block.
+
+        Returns:
+            A string containing the source code of the statements.
+        """
+        src = ""
+        for statement in self.statements:
+            print type(statement)
+            if type(statement) in [ast.If, ast.For, ast.While]:
+                src += codegen.to_source(statement).split("\n")[0] + "\n"
+            elif (
+                type(statement) == ast.FunctionDef
+                or type(statement) == ast.FunctionDef
+            ):
+                src += (codegen.to_source(statement)).split("\n")[0] + "...\n"
+            else:
+                src += codegen.to_source(statement)
+        return src
+    
     def at(self):
         """
         Get the line number of the first statement of the block in the program.
@@ -112,4 +139,16 @@ class CFGBlock():
         link = Link(self, next, exitcase)
         self.exits.append(link)
         next.predecessors.append(link)
+     
+    def get_dict(block):   
+        id = block.id
+        text = block.get_source()
+        type = block.type
+        children =[]
+        for i in block.exits:
+            children.append(i.target.id)
+        
+        
+        dict = {"id": id, "text": text, "children": children, "type": type}
+        return dict
 
