@@ -2,6 +2,7 @@
 Control flow graph builder.
 """
 import ast
+from collections import defaultdict, deque
 from typing import Dict, List, Optional, DefaultDict, Deque, Set, Union
 from my_model import Link, CFGBlock
 
@@ -59,9 +60,7 @@ class CFGBuilder():
     a program's AST and iteratively build the corresponding CFG.
     """
 
-    def __init__(
-        self, short = True, treebuf = None
-    ):
+    def __init__(self, short = True, treebuf = None):
         self.isShort = short
         self._callbuf = []
         self._treebuf = defaultdict(deque) if treebuf is None else treebuf
@@ -312,7 +311,7 @@ def main():
     tree = ast.parse(read_file_to_string(test), test)
     cfgb = CFGBuilder()
     cfg = cfgb.build(tree)
-    # for block in cfg:
-    #     print block.d
+    for block in cfg:
+        print block.get_dict()
 
 main()
