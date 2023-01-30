@@ -1,6 +1,6 @@
 
 import ast
-from codegen import *
+import codegen
 
 
 class Link(object):
