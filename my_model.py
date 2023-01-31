@@ -2,6 +2,51 @@
 import ast
 import codegen
 
+class CFG(object):
+    """
+    Control flow graph (CFG).
+
+    A control flow graph is composed of basic blocks and links between them
+    representing control flow jumps. It has a unique entry block and several
+    possible 'final' blocks (blocks with no exits representing the end of the
+    CFG).
+    """
+
+    # Also serves as graph Key table
+    # TODO Change value type to dict. Can be upacked into graph.node fn.
+
+    def __init__(self, name):
+        assert isinstance(name, str), "Name of a CFG must be a string"
+        # Name of the function or module being represented.
+        self.name = name
+        # Entry block of the CFG.
+        self.entryblock = None
+        # Final blocks of the CFG.
+        self.finalblocks = []
+
+        self.lineno = 0
+        self.end_lineno= 0
+        self.qualname = "" #dont know what this is for
+        
+    def own_blocks(self):
+        """
+            Generator that yields all blocks in the current graph, excluding any
+            subgraphs
+        """
+        visited = set()
+        if self.entryblock is None:
+            raise TypeError(
+                "Expected self.entryblock to be not None but type is None"
+            )
+        to_visit = deque([self.entryblock])
+        while to_visit:
+            block = to_visit.popleft()
+            visited.add(block)
+            for exit_ in block.exits:
+                if exit_.target in visited or exit_.target in to_visit:
+                    continue
+                to_visit.append(exit_.target)
+            yield block
 
 class Link(object):
     """
@@ -91,13 +136,10 @@ class CFGBlock():
         """
         src = ""
         for statement in self.statements:
-            print type(statement)
+            
             if type(statement) in [ast.If, ast.For, ast.While]:
                 src += codegen.to_source(statement).split("\n")[0] + "\n"
-            elif (
-                type(statement) == ast.FunctionDef
-                or type(statement) == ast.FunctionDef
-            ):
+            elif (type(statement) == ast.FunctionDef or type(statement) == ast.FunctionDef):
                 src += (codegen.to_source(statement)).split("\n")[0] + "...\n"
             else:
                 src += codegen.to_source(statement)
@@ -139,10 +181,15 @@ class CFGBlock():
         link = Link(self, next, exitcase)
         self.exits.append(link)
         next.predecessors.append(link)
+        
+    
      
     def get_dict(block):   
         id = block.id
-        text = block.get_source()
+        try:
+            text = block.get_source()
+        except:
+            text =block.statements
         type = block.type
         children =[]
         for i in block.exits:

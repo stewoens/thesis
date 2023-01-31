@@ -4,7 +4,7 @@ Control flow graph builder.
 import ast
 from collections import defaultdict, deque
 from typing import Dict, List, Optional, DefaultDict, Deque, Set, Union
-from my_model import Link, CFGBlock
+from my_model import Link, CFGBlock, CFG
 
 test = r"C:/Users/ninas/OneDrive/Documents/UNI/Productive-Bachelors/example.py"
 
@@ -96,10 +96,13 @@ class CFGBuilder():
             Returns:
                 A Block object with a new unique id.
             """
+
+    
             self.current_id += 1
             block = CFGBlock(id =self.current_id, type =type)
             if statement is not None:
-                self.add_statement(block, statement)
+                block.add_statement(statement)
+            return block
 
             self.cfg.append(block)
             
@@ -132,6 +135,63 @@ class CFGBuilder():
         
 # ---------- Building methods ---------- #
 
+    def clean_cfg(self, block, visited):
+        
+        """
+        Remove the useless (empty) blocks from a CFG.
+
+        Args:
+            block: The block from which to start traversing the CFG to clean
+                   it.
+            visited: A list of blocks that already have been visited by
+                     clean_cfg (recursive function).
+        """
+        
+        # Don't visit blocks twice.
+        if block in visited:
+            return
+        visited.add(block)
+        
+        # Empty blocks are removed from the CFG.
+        if block.is_empty():
+            for pred in block.predecessors:
+                for exit in block.exits:
+                    self.add_exit(
+                        pred.source,
+                        exit.target,
+                        merge_exitcases(pred.exitcase, exit.exitcase),
+                    )
+                    # Check if the exit hasn't yet been removed from
+                    # the predecessors of the target block.
+                    if exit in exit.target.predecessors:
+                        exit.target.predecessors.remove(exit)
+                # Check if the predecessor hasn't yet been removed from
+                # the exits of the source block.
+                if pred in pred.source.exits:
+                    pred.source.exits.remove(pred)
+        
+            block.predecessors = []
+            for exit in block.exits:
+                self.clean_cfg(exit.target, visited)
+            block.exits = []
+        else:
+            for exit in block.exits:
+                self.clean_cfg(exit.target, visited)
+    
+    def print_blocks(self, block,visited, mylist):
+
+        if block in visited:
+            return mylist
+        visited.add(block)
+         
+        dict = block.get_dict()
+        print dict
+        mylist.append(dict)
+        modifiedlist = mylist
+        for exit in block.exits:
+            modifiedlist = self.print_blocks(exit.target, visited, mylist)
+        return modifiedlist
+                
     def build(self, tree, entry_id = 0):
         """
         Build a CFG from an AST.
@@ -143,13 +203,14 @@ class CFGBuilder():
         Returns:
             The CFG produced from the AST.
         """
-        self.cfg = []
+        self.cfg = CFG(test)
         self.current_id = entry_id
         self.current_block =self.new_block(tree.__class__.__name__)
-        
+        self.cfg.entryblock = self.current_block
         
         
         self.traverse(tree)
+        #self.clean_cfg(self.cfg.entryblock, set())
         return self.cfg
         
         
@@ -165,7 +226,6 @@ class CFGBuilder():
         # will a new block be generated after a specific statement or before 
         #boolean wether can join old node or not (options are 1: add as statement 
         #                                                  or 2: add to children (pos))
-        pos = len(self.cfg)
         type= node.__class__.__name__
         
         # decide if the current node is Control Flow Relevant or not.
@@ -173,11 +233,11 @@ class CFGBuilder():
         if isinstance(node, ast.Module):
             if self.current_block.statements:
                 mod_block = self.new_block(type)
-                self.add_statement(mod_block, node)
+                self.add_statement(mod_block, test)
                 self.add_exit(self.current_block, mod_block)
                 self.current_block = mod_block
             else:
-                self.add_statement(self.current_block, node)
+                self.add_statement(self.current_block, test)
             
             next_block = self.new_block()
             
@@ -186,9 +246,8 @@ class CFGBuilder():
             self.add_exit(self.current_block, next_block)
                 
             
-            
-        # elif isinstance(node, ast.For):
         elif isinstance(node,ast.For):
+        
             # TODO for/else
 
             loop_guard = self.new_loopguard()
@@ -198,7 +257,7 @@ class CFGBuilder():
             if isinstance(node.iter, ast.Call):
                 self.traverse(node.iter)
             # New block for the body of the for-loop.
-            for_block = self.new_block()
+            for_block = self.new_block(type)
             self.add_exit(self.current_block, for_block, node.iter)
 
             # Block of code after the for loop.
@@ -221,15 +280,17 @@ class CFGBuilder():
 
             # Continue building the CFG in the after-for block.
             self.current_block = afterfor_block
-            #     current_block = self.new_block(type)
-            #     pos+=1 
-            #     #dump target info
-            #     self.add_statement(current_block,ast.dump(node.target))
-            #     #dump iter info
-            #     self.add_statement(self.cfg[-1],ast.dump(node.iter))
-            #     print node.body
-            #     for child in node.body:
-            #         self.add_exit(current_block, self.traverse(child))
+            
+            #code i wrote for this
+                #current_block = self.new_block(type)
+                # pos+=1 
+                #dump target info
+                #self.add_statement(current_block,ast.dump(node.target))
+                #dump iter info
+                #self.add_statement(self.cfg[-1],ast.dump(node.iter))
+                #print node.body
+                #for child in node.body:
+                #   self.add_exit(current_block, self.traverse(child))
                     
         elif isinstance(node, ast.If):
             if self.current_block.statements:
@@ -272,38 +333,40 @@ class CFGBuilder():
             # Continue building the CFG in the after-if block.
             self.current_block = afterif_block
 
-            # current_block = self.new_block(type)
-            # pos+=1 
-            # #dump test info
-            # self.add_statement(current_block,ast.dump(node.test))
-            
-            # # have to create seperate children for each because otherwise true & false in same block
-            # for child in node.body:
-            #     self.add_child(current_block, self.traverse(child))
+            #code i wrote for this
+                # current_block = self.new_block(type)
+                # pos+=1 
+                # #dump test info
+                # self.add_statement(current_block,ast.dump(node.test))
                 
-            # else_type= node.orelse[0].__class__.__name__
-            # self.new_block(else_type)
-            # pos+=1 
-        
-            # for child in node.orelse:
-            #     self.add_child(current_block, self.traverse(child))
+                # # have to create seperate children for each because otherwise true & false in same block
+                # for child in node.body:
+                #     self.add_child(current_block, self.traverse(child))
+                    
+                # else_type= node.orelse[0].__class__.__name__
+                # self.new_block(else_type)
+                # pos+=1 
+            
+                # for child in node.orelse:
+                #     self.add_child(current_block, self.traverse(child))
             
         # ----------------GENERAL CASE--------------------#
         else:    
             #if the parent is a cfg node, a new node is created
-            if self.cfg[-1].type in stmnt_types:
-                current_block =self.new_block(type)
-                pos += 1
-            else:current_block = self.cfg[-1]
-                
-            self.add_statement(self.cfg[-1], ast.dump(node))
+            if self.current_block.type in stmnt_types:
+                current_block = self.current_block
+                new_block = self.new_block(type)
+                self.add_exit(current_block, new_block)
+                self.current_block =new_block
+            
+            
+            self.add_statement(self.current_block, node)
+            
             #general child traversing
             # for child in ast.iter_child_nodes(node):
             #     self.add_child(current_block, self.traverse(child))
             
         
-            
-        return pos
             
         
    
@@ -311,7 +374,7 @@ def main():
     tree = ast.parse(read_file_to_string(test), test)
     cfgb = CFGBuilder()
     cfg = cfgb.build(tree)
-    for block in cfg:
-        print block.get_dict()
+    mylist = cfgb.print_blocks(cfg.entryblock, set(),mylist=[])
+    
 
 main()
