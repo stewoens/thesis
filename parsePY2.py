@@ -1,5 +1,6 @@
 from DATA.parse_python import parse_file #check
-from parse_cfg import parse_file_2cfg
+#from parse_cfg import parse_file_2cfg
+from build import main
 import os
 import ast
 
@@ -27,7 +28,7 @@ def test_path_prep():
 
  
 def test_output_cfg():           
-    with open(output_cfg,'w') as out, open(test, 'r')as f:
+    with open(output_cfg,'w') as out, open(path, 'r')as f:
         print >>out, parse_file_2cfg(test)
         print "finished :)"
         
@@ -38,7 +39,7 @@ def test_output_ast():
 
 def data_parser_cfg():
     i =0
-    with open(output,'w') as out:
+    with open(output_cfg,'w') as out:
         for root, _, files in os.walk(data):
             for file in files:
                 #test
@@ -47,14 +48,15 @@ def data_parser_cfg():
                      return
                 path = prep_path(os.path.join(root, file))
                 with open(path, 'r', )as f:
-                    print >>out, parse_file_2cfg(path)
+                    #print >>out, main(path)
+                    print >>out, parse_python(path)
                     s = "done with file " + str(i)
                     print s
                     i = i+1
     print "finished :)"
     return
 
-test_output_cfg()
+data_parser_cfg()
 
 
 
