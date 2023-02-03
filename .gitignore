@@ -2,6 +2,7 @@
 /ARCHIVE
 /OUTPUT
 /ORIGINALS
+/3to2
 /py2cfg-original
 **/*.pyc
 /.vscode
