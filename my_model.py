@@ -1,6 +1,5 @@
 
 import ast
-import codegen
 
 class CFG(object):
     """
@@ -126,24 +125,24 @@ class CFGBlock():
         # Function blocks within this block ???
         self.func_blocks = []
     
-    def get_source(self):
-        """
-        Get a string containing the Python source code corresponding to the
-        statements in the block.
+    # def get_source(self):
+    #     """
+    #     Get a string containing the Python source code corresponding to the
+    #     statements in the block.
 
-        Returns:
-            A string containing the source code of the statements.
-        """
-        src = ""
-        for statement in self.statements:
+    #     Returns:
+    #         A string containing the source code of the statements.
+    #     """
+    #     src = ""
+    #     for statement in self.statements:
             
-            if type(statement) in [ast.If, ast.For, ast.While]:
-                src += codegen.to_source(statement).split("\n")[0] + "\n"
-            elif (type(statement) == ast.FunctionDef or type(statement) == ast.FunctionDef):
-                src += (codegen.to_source(statement)).split("\n")[0] + "...\n"
-            else:
-                src += codegen.to_source(statement)
-        return src
+    #         if type(statement) in [ast.If, ast.For, ast.While]:
+    #             src += codegen.to_source(statement).split("\n")[0] + "\n"
+    #         elif (type(statement) == ast.FunctionDef or type(statement) == ast.FunctionDef):
+    #             src += (codegen.to_source(statement)).split("\n")[0] + "...\n"
+    #         else:
+    #             src += codegen.to_source(statement)
+    #     return src
     
     def at(self):
         """
