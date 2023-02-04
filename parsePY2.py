@@ -1,6 +1,6 @@
-from DATA.parse_python import parse_file #check
+from DATA.parse_python import parse_file, read_file_to_string
 #from parse_cfg import parse_file_2cfg
-from build import main
+#from build import main
 import os
 import ast
 
@@ -49,7 +49,9 @@ def data_parser_cfg():
                 path = prep_path(os.path.join(root, file))
                 with open(path, 'r', )as f:
                     #print >>out, main(path)
-                    print >>out, parse_python(path)
+                    tree =ast.parse(read_file_to_string(path), path)
+                    print >>out, ast.dump(tree)
+                    print ast.get_docstring(tree)
                     s = "done with file " + str(i)
                     print s
                     i = i+1
