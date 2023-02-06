@@ -196,6 +196,9 @@ class CFGBlock():
         
         
         #text removed for orga
-        dict = {"id": id,"text":text[0], "children": children, "type": type}
+        if type in ['If', 'True_Case','False_case','While','For'] or True:
+            dict = {"id": id,"text":text, "children": children, "type": type}
+        else:
+            dict = {"id": id, "children": children, "type": type}
         return dict
 
