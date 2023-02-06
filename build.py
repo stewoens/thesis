@@ -85,7 +85,11 @@ class CFGBuilder():
     @property
     def loop_stack(self):
         return self._treebuf["loop_stack"]
-        
+    
+    @property
+    def try_stack(self):
+        return self._treebuf["try_stack"]
+
     def new_loopguard(self):
         """
         Create a new block for a loop's guard if the current block is not
@@ -195,7 +199,7 @@ class CFGBuilder():
             for exit in block.exits:
                 self.clean_cfg(exit.target, visited)
     
-    def print_blocks(self, block,visited, mylist):
+    def show_blocks(self, block,visited, mylist):
 
         if block in visited:
             return mylist
@@ -206,7 +210,7 @@ class CFGBuilder():
         mylist.append(dict)
         modifiedlist = mylist
         for exit in block.exits:
-            modifiedlist = self.print_blocks(exit.target, visited, mylist)
+            modifiedlist = self.show_blocks(exit.target, visited, mylist)
         return modifiedlist
                 
     def build(self, tree,path, entry_id = 0):
@@ -231,12 +235,11 @@ class CFGBuilder():
         
         
     def traverse(self, node, path= None):
+         
         """
         Walk along the AST to generate CFG
-
         Args:
             tree (AST): the tree to be walked
-        return id of Block
         """
         
         type= node.__class__.__name__
@@ -260,10 +263,9 @@ class CFGBuilder():
             loop_guard = self.new_loopguard()
             self.current_block = loop_guard
             self.current_block.type =type
-            self.add_statement(self.current_block, ast.dump(node))
+            self.add_statement(self.current_block, ast.dump(node.target))
+            self.add_statement(self.current_block,ast.dump(node.iter))
 
-            # if isinstance(node.iter, ast.Call):
-            #     self.traverse(node.iter)
             # New block for the body of the for-loop.
             for_block = self.new_block(type)
             self.add_exit(self.current_block, for_block, node.iter)
@@ -288,20 +290,45 @@ class CFGBuilder():
 
             # Continue building the CFG in the after-for block.
             self.current_block = afterfor_block
-                          
+
+        elif isinstance(node, ast.While):
+            loop_guard = self.new_loopguard()
+            self.current_block = loop_guard
+            self.current_block.type =type
+            self.add_statement(self.current_block,ast.dump(node.test))
+
+            # New block for the case where the test in the while is True.
+            while_block = self.new_block(type)
+            self.add_exit(self.current_block, while_block, node.test)
+
+            # New block for the case where the test in the while is False.
+            afterwhile_block = self.new_block()
+            self.add_exit(self.current_block, afterwhile_block, invert(node.test))
+
+            # Populate the while block.
+            self.current_block = while_block
+            self.loop_stack.appendleft((afterwhile_block, loop_guard))
+            for child in node.body:
+                self.traverse(child)
+            top = self.loop_stack.popleft()
+            assert top == (afterwhile_block, loop_guard)
+            self.add_exit(self.current_block, loop_guard)
+
+            # Continue building the CFG in the after-while block.
+            self.current_block = afterwhile_block
+
         elif isinstance(node, ast.If):
             if self.current_block.statements:
                 # Add the If statement at the beginning of the new block.
                 cond_block = self.new_block(type)
-                self.add_statement(cond_block,  ast.dump(node))
+                self.add_statement(cond_block,  ast.dump(node.test))
                 self.add_exit(self.current_block, cond_block)
                 self.current_block = cond_block
           
             else:
                 # Add the If statement at the end of the current block.
-                self.add_statement(self.current_block,  ast.dump(node))
-            if any(isinstance(node.test, T) for T in (ast.Compare, ast.Call)):
-                self.traverse(node.test)
+                self.add_statement(self.current_block,  ast.dump(node.test))
+
             # Create a new block for the body of the if. (storing the True case)
             if_block = self.new_block('True_Case')
 
@@ -344,6 +371,7 @@ class CFGBuilder():
             for child in node.body:
                 self.traverse(child) 
 
+
         elif isinstance(node,ast.FunctionDef):
             if self.current_block.statements:
 
@@ -351,12 +379,151 @@ class CFGBuilder():
                 self.add_statement(func_block,node.name)
                 self.add_exit(self.current_block, func_block)
                 self.current_block = func_block
-                print "This"
-            elif self.current_block.type == "FunctionDef":
+            elif self.current_block.type == 'FunctionDef':
                 self.add_statement(self.current_block, node.name)
 
             for child in node.body:
                 self.traverse(child) 
+
+        elif isinstance(node, ast.Break):
+            assert self.loop_stack
+            after_block, _ = self.loop_stack[0]
+            self.current_block.add_statement(ast.dump(node))
+            self.current_block.add_exit(after_block)
+            self.current_block = self.new_block()
+        
+        elif isinstance(node,ast.Continue):
+            assert self.loop_stack
+            _, loop_guard = self.loop_stack[0]
+            self.add_statement(self.current_block,ast.dump(node))
+            self.add_exit(self.current_block, loop_guard)
+            self.current_block = self.new_block()
+        
+        elif isinstance(node, ast.Return):
+            if self.current_block.statements:
+                return_block = self.new_block(type)
+                self.current_block.add_exit(return_block)
+                self.current_block = return_block
+
+            self.add_statement(self.current_block, ast.dump(node))
+
+            if self.try_stack:
+                stackobj = self.try_stack[0]
+                if stackobj.iter_state != TryEnum.FINAL and stackobj.has_final:
+                    after_return = self.new_block()
+                    self.current_block.add_exit(after_return)
+                    after_return.add_exit(self.current_block)
+                    self.current_block = after_return
+                    for child in stackobj.node.finalbody:
+                        self.visit(child)
+            
+            #not sure if i need finalblocks
+            #self.cfg.finalblocks.append(self.current_block)
+            # Continue in a new block but without any jump to it -> all code after
+            # the return statement will not be included in the CFG.
+            self.current_block = self.new_block()
+
+        elif isinstance(node, ast.Raise):
+            if self.current_block.statements:
+                raise_block = self.new_block(type)
+                self.current_block.add_exit(raise_block)
+                self.current_block = raise_block
+            else:
+                self.current_block.add_statement(node)
+
+            if not self.try_stack:
+                # Raise statement outside of try block
+                # If we don't know where control jumps, this is the last block
+                self.current_block = self.new_block(type)
+                return
+            if isinstance(node.exc, ast.Call):
+                e_id = node.exc.func.id
+            elif isinstance(node.exc, ast.Name):
+                e_id = node.exc.id
+            else:
+                raise ValueError("Unexpected object {1}".format(node.exc))
+
+            for tryobj in list(self.try_stack):
+
+                def contains(item, state):
+                    return (
+                        item in tryobj.try_block.except_blocks
+                        and tryobj.iter_state == state
+                    )
+
+                if contains(e_id, TryEnum.BODY):
+                    # try:
+                    #     raise StopIteration
+                    # except StopIteration:
+                    #     control_transfer_here = True
+                    # except Exception:
+                    #     control_transfer_here = False
+                    self.current_block.add_exit(
+                        tryobj.try_block.except_blocks[e_id]
+                    )
+                    break
+                elif contains(None, TryEnum.BODY):
+                    # try:
+                    #     raise StopIteration
+                    # except:
+                    #     control_transfers_here = 1
+                    self.current_block.add_exit(
+                        tryobj.try_block.except_blocks[None]
+                    )
+                    break
+
+                elif contains(e_id, TryEnum.EXCEPT) or contains(
+                    None, TryEnum.EXCEPT
+                ):
+                    if tryobj.has_final:
+                        _after_block = self.new_block()
+                        self.current_block.add_exit(_after_block)
+                        _after_block.add_exit(self.current_block)
+                        self.current_block = _after_block
+
+                        for child in tryobj.node.finalbody:
+                            if isinstance(child, ast.Raise):
+                                break
+                            self.visit(child)
+
+                elif tryobj.iter_state == TryEnum.ELSE:
+                    if tryobj.has_final:
+                        _after_block = self.new_block()
+                        self.current_block.add_exit(_after_block)
+                        _after_block.add_exit(self.current_block)
+                        self.current_block = _after_block
+                        for child in tryobj.node.finalbody:
+                            if isinstance(child, ast.Raise):
+                                break
+                            self.visit(child)
+
+                elif tryobj.iter_state != TryEnum.FINAL and tryobj.has_final:
+                    # try: raise Exception
+                    # finally: pass
+                    _after_block = self.new_block()
+                    self.current_block.add_exit(_after_block)
+                    self.current_block = _after_block
+
+                    for child in tryobj.node.finalbody:
+                        if isinstance(child, ast.Raise):
+                            top = self.try_stack.popleft()
+                            break
+                        self.visit(child)
+            self.current_block = self.new_block()
+
+        elif isinstance(node,ast.Assert):
+            self.add_statement(self.current_block, ast.dump(node))
+            # New block for the case in which the assertion 'fails'.
+            failblock = self.new_block('Fail_Block')
+            self.add_exit(self.current_block, failblock, invert(node.test))
+            # If the assertion fails, the current flow ends, so the fail block is a
+            # final block of the CFG.
+            # self.cfg.finalblocks.append(failblock)
+            # If the assertion is True, continue the flow of the program.
+            successblock = self.new_block()
+            self.add_exit(self.current_block, successblock, node.test)
+            self.current_block = successblock
+         
 
         # ----------------GENERAL CASE--------------------#
         else:    
@@ -369,8 +536,9 @@ class CFGBuilder():
             
             
             self.add_statement(self.current_block,  ast.dump(node))
-        
-        print "type:{0} and id: {1}".format(type, self.current_block.id)
+            if self.current_block.type == None:
+                self.current_block.type = type
+        #print "type:{0} and id: {1}".format(type, self.current_block.id)
             
             #general child traversing
             # for child in ast.iter_child_nodes(node):
@@ -382,11 +550,11 @@ class CFGBuilder():
    
 def main(path):
     tree = ast.parse(read_file_to_string(path), path)
-    #print ast.dump(tree)
     cfgb = CFGBuilder()
     cfg = cfgb.build(tree ,path)
-    mylist = cfgb.print_blocks(cfg.entryblock, set(),mylist=[])
+    mylist = cfgb.show_blocks(cfg.entryblock, set(),mylist=[])
     
 
 
-main('\\\\?\\C:\\Users\\ninas\\OneDrive\\Documents\\UNI\\Productive-Bachelors\\DATA\\data2\\00\\wikihouse\\asset.py')
+#main('\\\\?\\C:\\Users\\ninas\\OneDrive\\Documents\\UNI\\Productive-Bachelors\\DATA\\data2\\00\\wikihouse\\asset.py')
+main('\\\\?\\C:\\Users\\ninas\\OneDrive\\Documents\\UNI\\Productive-Bachelors\\example.py')
