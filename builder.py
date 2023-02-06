@@ -379,65 +379,7 @@ class CFGBuilder(ast.NodeVisitor):
         
     def get_type(self, block:Block) -> str:
         blocktype = block.type()
-        
-        #types visited in local builder
-        if blocktype is ast.ClassDef: 
-            type = "class"
-        elif blocktype is ast.Expr:
-            type = "expression"
-        elif blocktype is ast.Call:
-            type = "call"
-        elif blocktype is ast.Assign:
-            type = "assign"
-        elif blocktype is ast.AnnAssign:
-            type = "annassign"
-        elif blocktype is ast.AugAssign:
-            type = "augassign"
-        elif blocktype is ast.Raise:
-            type = "raise"
-        elif blocktype is ast.Assert:
-            type = "assert"
-        elif blocktype is ast.If:
-            type = "if"
-        elif blocktype is ast.While:
-            type = "while"
-        elif blocktype is ast.For:
-            type = "for"
-        elif blocktype is ast.Break:
-            type = "break" 
-        elif blocktype is ast.Continue:
-            type = "continue"
-        elif blocktype is ast.Import:
-            type = "import"
-        elif blocktype is ast.ImportFrom:
-            type = "importfrom"
-        elif blocktype is ast.FunctionDef:
-            type = "function"
-        elif blocktype is ast.AsyncFunctionDef:
-            type = "asyncfunction"
-        elif blocktype is ast.Await:
-            type = "await"
-        elif blocktype is ast.Return:
-            type = "return"
-        elif blocktype is ast.Yield:
-            type = "yield"
-        elif blocktype is ast.Try:
-            type = "try"
-        elif blocktype is ast.ExceptHandler:
-            type = "excepthandler"
-            
-        #types visited in ast builder
-        elif blocktype is ast.With:
-            type = "with"
-        elif blocktype is ast.Delete:
-            type = "delete"
-        elif blocktype is ast.Pass:  
-            type = "pass"
-        elif blocktype is ast.AST:
-            type = "ast"
-        else:
-            print("type yet to be implemented: ", blocktype)
-        return type
+        print(blocktype)
 
     def create_jsondata(self, block: Block,visited: Set[Block], mylist=list[dict]) -> List:
         """"
@@ -455,7 +397,6 @@ class CFGBuilder(ast.NodeVisitor):
         children =[]
         for i in block.exits:
             children.append(i.target.id)
-        
         
         dict = {"id": id, "text": text, "children": children, "type": type}
         mylist.append(dict)
