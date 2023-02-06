@@ -9,7 +9,7 @@ import os
 
 test = r"C:/Users/ninas/OneDrive/Documents/UNI/Productive-Bachelors/example.py"
 
-stmnt_types = ['Module' , 'If', 'For', 'While', 'Break', 'Continue', 'ExceptHandler', 'With']
+stmnt_types = ['Module' , 'If', 'For', 'While', 'Break', 'Continue', 'ExceptHandler', 'With','ClassDef','FunctionDef']
 
 def invert(node): #: Union[Compare, ast.expr]
     """
@@ -38,8 +38,8 @@ def invert(node): #: Union[Compare, ast.expr]
         op = type(node.ops[0])
         # inverse_Node is [ast.NameConstant, ast.UnaryOp, Compare]
         inverse_node = ast.Compare(left=node.left, ops=[inverse[op]()], comparators=node.comparators)
-    elif isinstance(node, ast.NameConstant) and node.value in [True, False]:
-        inverse_node = ast.NameConstant(value=not node.value)
+    elif isinstance(node, ast.Name) and node.id in [True, False]:
+        inverse_node = ast.Name(value=not node.id)
     else:
         inverse_node = ast.UnaryOp(op=ast.Not(), operand=node)
 
@@ -222,10 +222,8 @@ class CFGBuilder():
         """
         self.cfg = CFG(path)
         self.current_id = entry_id
-        print entry_id
         self.current_block =self.new_block(tree.__class__.__name__)
         self.cfg.entryblock = self.current_block
-        
         
         self.traverse(tree,path)
         self.clean_cfg(self.cfg.entryblock, set())
@@ -241,13 +239,8 @@ class CFGBuilder():
         return id of Block
         """
         
-        # will a new block be generated after a specific statement or before 
-        #boolean wether can join old node or not (options are 1: add as statement 
-        #                                                  or 2: add to children (pos))
         type= node.__class__.__name__
-        print "type:{0} and id: {1}".format(self.current_block.type, self.current_block.id)
-        # decide if the current node is Control Flow Relevant or not.
-            
+    
         if isinstance(node, ast.Module):
             if self.current_block.statements:
                 mod_block = self.new_block(type)
@@ -258,8 +251,7 @@ class CFGBuilder():
                 self.add_statement(self.current_block, path)
             
             for child in node.body:
-                self.traverse(child)
-                
+                self.traverse(child) 
             
         elif isinstance(node,ast.For):
         
@@ -269,8 +261,6 @@ class CFGBuilder():
             self.current_block = loop_guard
             self.current_block.type =type
             self.add_statement(self.current_block, ast.dump(node))
-            print node
-            
 
             # if isinstance(node.iter, ast.Call):
             #     self.traverse(node.iter)
@@ -298,18 +288,7 @@ class CFGBuilder():
 
             # Continue building the CFG in the after-for block.
             self.current_block = afterfor_block
-            
-            #code i wrote for this
-                #current_block = self.new_block(type)
-                # pos+=1 
-                #dump target info
-                #self.add_statement(current_block,ast.dump(node.target))
-                #dump iter info
-                #self.add_statement(self.cfg[-1],ast.dump(node.iter))
-                #print node.body
-                #for child in node.body:
-                #   self.add_exit(current_block, self.traverse(child))
-                    
+                          
         elif isinstance(node, ast.If):
             if self.current_block.statements:
                 # Add the If statement at the beginning of the new block.
@@ -317,14 +296,12 @@ class CFGBuilder():
                 self.add_statement(cond_block,  ast.dump(node))
                 self.add_exit(self.current_block, cond_block)
                 self.current_block = cond_block
-                print "passes 2"
+          
             else:
-                print "passes 1"
                 # Add the If statement at the end of the current block.
                 self.add_statement(self.current_block,  ast.dump(node))
             if any(isinstance(node.test, T) for T in (ast.Compare, ast.Call)):
                 self.traverse(node.test)
-                print "passes 3"
             # Create a new block for the body of the if. (storing the True case)
             if_block = self.new_block('True_Case')
 
@@ -353,24 +330,34 @@ class CFGBuilder():
 
             # Continue building the CFG in the after-if block.
             self.current_block = afterif_block
+        
+        elif isinstance(node, ast.ClassDef):
+            if self.current_block.statements:
 
-            #code i wrote for this
-                # current_block = self.new_block(type)
-                # pos+=1 
-                # #dump test info
-                # self.add_statement(current_block,ast.dump(node.test))
-                
-                # # have to create seperate children for each because otherwise true & false in same block
-                # for child in node.body:
-                #     self.add_child(current_block, self.traverse(child))
-                    
-                # else_type= node.orelse[0].__class__.__name__
-                # self.new_block(else_type)
-                # pos+=1 
-            
-                # for child in node.orelse:
-                #     self.add_child(current_block, self.traverse(child))
-            
+                class_block = self.new_block(type)
+                self.add_statement(class_block,node.name)
+                self.add_exit(self.current_block, class_block)
+                self.current_block = class_block
+            elif self.current_block.type == "ClassDef":
+                self.add_statement(self.current_block, node.name)
+
+            for child in node.body:
+                self.traverse(child) 
+
+        elif isinstance(node,ast.FunctionDef):
+            if self.current_block.statements:
+
+                func_block = self.new_block(type)
+                self.add_statement(func_block,node.name)
+                self.add_exit(self.current_block, func_block)
+                self.current_block = func_block
+                print "This"
+            elif self.current_block.type == "FunctionDef":
+                self.add_statement(self.current_block, node.name)
+
+            for child in node.body:
+                self.traverse(child) 
+
         # ----------------GENERAL CASE--------------------#
         else:    
             #if the parent is a cfg node, a new node is created
@@ -382,6 +369,8 @@ class CFGBuilder():
             
             
             self.add_statement(self.current_block,  ast.dump(node))
+        
+        print "type:{0} and id: {1}".format(type, self.current_block.id)
             
             #general child traversing
             # for child in ast.iter_child_nodes(node):
@@ -393,10 +382,10 @@ class CFGBuilder():
    
 def main(path):
     tree = ast.parse(read_file_to_string(path), path)
-    print ast.dump(tree)
+    #print ast.dump(tree)
     cfgb = CFGBuilder()
     cfg = cfgb.build(tree ,path)
-    #mylist = cfgb.print_blocks(cfg.entryblock, set(),mylist=[])
+    mylist = cfgb.print_blocks(cfg.entryblock, set(),mylist=[])
     
 
 

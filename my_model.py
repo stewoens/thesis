@@ -195,6 +195,7 @@ class CFGBlock():
             children.append(i.target.id)
         
         
-        dict = {"id": id, "text": text, "children": children, "type": type}
+        #text removed for orga
+        dict = {"id": id,"text":text[0], "children": children, "type": type}
         return dict
 
