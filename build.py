@@ -415,7 +415,7 @@ class CFGBuilder():
                     after_return.add_exit(self.current_block)
                     self.current_block = after_return
                     for child in stackobj.node.finalbody:
-                        self.visit(child)
+                        self.traverse(child)
             
             #not sure if i need finalblocks
             #self.cfg.finalblocks.append(self.current_block)
@@ -484,7 +484,7 @@ class CFGBuilder():
                         for child in tryobj.node.finalbody:
                             if isinstance(child, ast.Raise):
                                 break
-                            self.visit(child)
+                            self.traverse(child)
 
                 elif tryobj.iter_state == TryEnum.ELSE:
                     if tryobj.has_final:
@@ -495,7 +495,7 @@ class CFGBuilder():
                         for child in tryobj.node.finalbody:
                             if isinstance(child, ast.Raise):
                                 break
-                            self.visit(child)
+                            self.traverse(child)
 
                 elif tryobj.iter_state != TryEnum.FINAL and tryobj.has_final:
                     # try: raise Exception
@@ -508,7 +508,7 @@ class CFGBuilder():
                         if isinstance(child, ast.Raise):
                             top = self.try_stack.popleft()
                             break
-                        self.visit(child)
+                        self.traverse(child)
             self.current_block = self.new_block()
 
         elif isinstance(node,ast.Assert):
@@ -524,6 +524,58 @@ class CFGBuilder():
             self.add_exit(self.current_block, successblock, node.test)
             self.current_block = successblock
          
+        elif isinstance(node, ast.TryFinally) or isinstance(node,ast.TryExcept):
+            try_block = self.new_try_block(node)
+            after_tryblock = self.new_block()
+            self.current_block.add_exit(try_block)
+            stackobj = TryStackObject(
+                try_block, after_tryblock, bool(node.finalbody)
+            )
+            self.try_stack.appendleft(stackobj)
+
+            stackobj.iter_state = TryEnum.EXCEPT
+            for child in node.handlers:
+                self.current_block = self.new_block()
+                # If we encounter a raise statement during body iteration,
+                # we can link the raise block to the appropriate exception block (if any).
+                try:
+                    try_block.except_blocks[
+                        None if child.type is None else child.type.id  # type: ignore
+                    ] = self.current_block
+                except:
+                    try_block.except_blocks[None] = self.current_block
+                self.traverse(child)
+
+            stackobj.iter_state = TryEnum.BODY
+            self.current_block = try_block
+            for child1 in node.body:
+                self.traverse(child1)
+
+            if node.orelse:
+                stackobj.iter_state = TryEnum.ELSE
+                else_block = self.new_block()
+                self.current_block.add_exit(else_block)
+                self.current_block = else_block
+                for child2 in node.orelse:
+                    self.traverse(child2)
+
+            self.current_block.add_exit(after_tryblock)
+            self.current_block = after_tryblock
+            if node.finalbody:
+                stackobj.iter_state = TryEnum.FINAL
+                for child3 in node.finalbody:
+                    if isinstance(child3, ast.Raise):
+                        top = self.try_stack.popleft()
+                        self.visit_Raise(child3)
+                        self.try_stack.appendleft(top)
+                        break
+                    self.traverse(child3)
+                else:
+                    next_block = self.new_block()
+                    self.current_block.add_exit(next_block)
+                    self.current_block = next_block
+
+            del self.try_stack[0]
 
         # ----------------GENERAL CASE--------------------#
         else:    
