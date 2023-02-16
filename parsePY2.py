@@ -39,22 +39,24 @@ def test_output_ast():
 
 def data_parser_cfg():
     i =0
-    with open(output_cfg,'w') as out:
+    with open(output_cfg,'w') as out, open('OUTPUT/errorlog2.txt', 'w') as errorlog :
         for root, _, files in os.walk(data):
             for file in files:
                 #test
-                if i > 0:
-                     print "finished :)"
-                     return
+                # if i > 0:
+                #      print "finished :)"
+                #      return
                 path = prep_path(os.path.join(root, file))
-                with open(path, 'r', )as f:
-                    #print >>out, main(path)
-                    tree =ast.parse(read_file_to_string(path), path)
-                    print >>out, ast.dump(tree)
-                    print ast.get_docstring(tree)
-                    s = "done with file " + str(i)
-                    print s
-                    i = i+1
+                try:
+                    with open(path, 'r', )as f:
+                        #print >>out, main(path)
+                        tree =ast.parse(read_file_to_string(path), path)
+                        print >>out, ast.dump(tree)
+                        s = "done with file " + str(i)
+                        print s
+                        i = i+1
+                except Exception as e:
+                        errorlog.write(path + " " + str(e) + "\n")
     print "finished :)"
     return
 

@@ -371,7 +371,6 @@ class CFGBuilder():
             for child in node.body:
                 self.traverse(child) 
 
-
         elif isinstance(node,ast.FunctionDef):
             if self.current_block.statements:
 
@@ -590,14 +589,7 @@ class CFGBuilder():
             self.add_statement(self.current_block,  ast.dump(node))
             if self.current_block.type == None:
                 self.current_block.type = type
-        #print "type:{0} and id: {1}".format(type, self.current_block.id)
-            
-            #general child traversing
-            # for child in ast.iter_child_nodes(node):
-            #     self.add_child(current_block, self.traverse(child))
-            
-        
-            
+ 
         
    
 def main(path):
