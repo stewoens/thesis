@@ -1,7 +1,8 @@
 from DATA.parse_python import parse_file, read_file_to_string
 #from parse_cfg import parse_file_2cfg
-#from build import main
+from build import main
 import os
+import sys
 import ast
 
 # ---------- parse pyhon2 files to cfg with parse_cfg.py ---------- #
@@ -42,21 +43,21 @@ def data_parser_cfg():
     with open(output_cfg,'w') as out, open('OUTPUT/errorlog2.txt', 'w') as errorlog :
         for root, _, files in os.walk(data):
             for file in files:
-                #test
-                # if i > 0:
-                #      print "finished :)"
-                #      return
+                test
+                if i > 100:
+                     print "finished :)"
+                     return
                 path = prep_path(os.path.join(root, file))
                 try:
                     with open(path, 'r', )as f:
-                        #print >>out, main(path)
-                        tree =ast.parse(read_file_to_string(path), path)
-                        print >>out, ast.dump(tree)
+                        print >>out, main(path)
+                        # tree =ast.parse(read_file_to_string(path), path)
+                        # print >>out, ast.dump(tree)
                         s = "done with file " + str(i)
                         print s
                         i = i+1
                 except Exception as e:
-                        errorlog.write(path + " " + str(e) + "\n")
+                        errorlog.write(path + " " + str(e) +" " + "\n")
     print "finished :)"
     return
 
