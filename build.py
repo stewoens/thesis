@@ -2,13 +2,14 @@
 Control flow graph builder.
 """
 import ast
+from itertools import count
 from collections import defaultdict, deque
 from typing import Dict, List, Optional, DefaultDict, Deque, Set, Union
-from my_model import Link, CFGBlock, CFG
+from my_model import Link, TryBlock, CFGBlock, CFG
 import os
+import aenum
 
 test = r"C:/Users/ninas/OneDrive/Documents/UNI/Productive-Bachelors/example.py"
-
 stmnt_types = ['Module' , 'If', 'For', 'While', 'Break', 'Continue', 'ExceptHandler', 'With','ClassDef','FunctionDef']
 
 def invert(node): #: Union[Compare, ast.expr]
@@ -45,6 +46,7 @@ def invert(node): #: Union[Compare, ast.expr]
 
     return inverse_node
 
+
 def merge_exitcases(exit1,exit2,):
     """
     Merge the exitcases of two Links.
@@ -67,6 +69,24 @@ def read_file_to_string(filename):
     s = f.read()
     f.close()
     return s
+
+
+class TryEnum(aenum.IntEnum):
+    BODY = aenum.auto()
+    EXCEPT = aenum.auto()
+    ELSE = aenum.auto()
+    FINAL = aenum.auto()
+
+class TryStackObject:
+    def __init__(self, try_block, after_block, has_final, iter_state = None,):
+        self.try_block = try_block
+        self.after_block = after_block
+        self.has_final = has_final
+        self.iter_state = iter_state
+
+    @property
+    def node(self):
+        return self.try_block.statements[0]  # type: ignore
 
 
 class CFGBuilder():
@@ -128,6 +148,13 @@ class CFGBuilder():
             self.cfg.append(block)
             
             return block
+
+    def new_try_block(self,type =None, statement=None):
+        self.current_id += 1
+        block = TryBlock(id =self.current_id,type=type)
+        if statement is not None:
+            block.add_statement(statement)
+        return block
      
     def add_statement(self, block, statement):
         """
@@ -206,7 +233,7 @@ class CFGBuilder():
         visited.add(block)
          
         dict = block.get_dict()
-        print dict
+        #print dict
         mylist.append(dict)
         modifiedlist = mylist
         for exit in block.exits:
@@ -523,61 +550,9 @@ class CFGBuilder():
             self.add_exit(self.current_block, successblock, node.test)
             self.current_block = successblock
          
-        elif isinstance(node, ast.TryFinally) or isinstance(node,ast.TryExcept):
-            try_block = self.new_try_block(node)
-            after_tryblock = self.new_block()
-            self.current_block.add_exit(try_block)
-            stackobj = TryStackObject(
-                try_block, after_tryblock, bool(node.finalbody)
-            )
-            self.try_stack.appendleft(stackobj)
-
-            stackobj.iter_state = TryEnum.EXCEPT
-            for child in node.handlers:
-                self.current_block = self.new_block()
-                # If we encounter a raise statement during body iteration,
-                # we can link the raise block to the appropriate exception block (if any).
-                try:
-                    try_block.except_blocks[
-                        None if child.type is None else child.type.id  # type: ignore
-                    ] = self.current_block
-                except:
-                    try_block.except_blocks[None] = self.current_block
-                self.traverse(child)
-
-            stackobj.iter_state = TryEnum.BODY
-            self.current_block = try_block
-            for child1 in node.body:
-                self.traverse(child1)
-
-            if node.orelse:
-                stackobj.iter_state = TryEnum.ELSE
-                else_block = self.new_block()
-                self.current_block.add_exit(else_block)
-                self.current_block = else_block
-                for child2 in node.orelse:
-                    self.traverse(child2)
-
-            self.current_block.add_exit(after_tryblock)
-            self.current_block = after_tryblock
-            if node.finalbody:
-                stackobj.iter_state = TryEnum.FINAL
-                for child3 in node.finalbody:
-                    if isinstance(child3, ast.Raise):
-                        top = self.try_stack.popleft()
-                        self.visit_Raise(child3)
-                        self.try_stack.appendleft(top)
-                        break
-                    self.traverse(child3)
-                else:
-                    next_block = self.new_block()
-                    self.current_block.add_exit(next_block)
-                    self.current_block = next_block
-
-            del self.try_stack[0]
-
+        
         # ----------------GENERAL CASE--------------------#
-        else:    
+        else:   
             #if the parent is a cfg node, a new node is created
             if self.current_block.type in stmnt_types:
                 current_block = self.current_block
@@ -589,14 +564,14 @@ class CFGBuilder():
             self.add_statement(self.current_block,  ast.dump(node))
             if self.current_block.type == None:
                 self.current_block.type = type
- 
         
    
 def main(path):
     tree = ast.parse(read_file_to_string(path), path)
     cfgb = CFGBuilder()
     cfg = cfgb.build(tree ,path)
-    mylist = cfgb.show_blocks(cfg.entryblock, set(),mylist=[])
+    
+    return cfgb.show_blocks(cfg.entryblock, set(),mylist=[])
     
 
 
