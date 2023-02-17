@@ -1,5 +1,6 @@
 
 import ast
+from typing import Any, Deque, Tuple, List, Optional, Iterator, Set, Dict
 
 class CFG(object):
     """
@@ -98,7 +99,7 @@ class Link(object):
 
     #potentially add exitcase but needs astor, which i couldnt get
     
-class CFGBlock():
+class CFGBlock(object):
     """
     CFG Block.
 
@@ -201,4 +202,34 @@ class CFGBlock():
         else:
             dict = {"id": id, "children": children, "type": type}
         return dict
+
+class TryBlock(CFGBlock):
+    __slots__ = ("except_blocks",)
+
+    def __init__(self, id, type):
+        super(TryBlock,self).__init__(id, type)
+        self.except_blocks = {}
+
+    def get_source(self):
+        """
+        Get a string containing the Python source code corresponding to the
+        statements in the block.
+
+        Returns:
+            A string containing the source code of the statements.
+        """
+        if not self.statements[1:]:
+            return "try:"
+        src = ""
+        for statement in self.statements[1:]:  # We just want try body
+            if type(statement) in [ast.If, ast.For, ast.While]:
+                src += astor.to_source(statement).split("\n")[0] + "\n"
+            elif (
+                type(statement) == ast.FunctionDef
+                or type(statement) == ast.AsyncFunctionDef
+            ):
+                src += (astor.to_source(statement)).split("\n")[0] + "...\n"
+            else:
+                src += astor.to_source(statement)
+        return src
 
