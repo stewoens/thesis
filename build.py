@@ -414,14 +414,14 @@ class CFGBuilder():
         elif isinstance(node, ast.Break):
             assert self.loop_stack
             after_block, _ = self.loop_stack[0]
-            self.current_block.add_statement(ast.dump(node))
+            self.current_block.add_statement(node)
             self.current_block.add_exit(after_block)
             self.current_block = self.new_block()
         
         elif isinstance(node,ast.Continue):
             assert self.loop_stack
             _, loop_guard = self.loop_stack[0]
-            self.add_statement(self.current_block,ast.dump(node))
+            self.add_statement(self.current_block,node)
             self.add_exit(self.current_block, loop_guard)
             self.current_block = self.new_block()
         
@@ -431,7 +431,7 @@ class CFGBuilder():
                 self.current_block.add_exit(return_block)
                 self.current_block = return_block
 
-            self.add_statement(self.current_block, ast.dump(node))
+            self.add_statement(self.current_block, node)
 
             if self.try_stack:
                 stackobj = self.try_stack[0]
@@ -552,7 +552,7 @@ class CFGBuilder():
             self.current_block = self.new_block()
 
         elif isinstance(node,ast.Assert):
-            self.add_statement(self.current_block, ast.dump(node))
+            self.add_statement(self.current_block, node)
             # New block for the case in which the assertion 'fails'.
             failblock = self.new_block('Fail_Block')
             self.add_exit(self.current_block, failblock, invert(node.test))
@@ -632,7 +632,7 @@ class CFGBuilder():
                 self.current_block =new_block
             
             
-            self.add_statement(self.current_block,  ast.dump(node))
+            self.add_statement(self.current_block,  node)
             if self.current_block.type == None:
                 self.current_block.type = type
         
