@@ -440,6 +440,9 @@ class CFGBuilder():
                     self.current_block.add_exit(after_return)
                     after_return.add_exit(self.current_block)
                     self.current_block = after_return
+                    if isinstance(stackobj.node,str):
+                        print "String1"
+                        print stackobj.node
                     for child in stackobj.node.finalbody:
                         self.traverse(child)
             
@@ -450,10 +453,10 @@ class CFGBuilder():
             self.current_block = self.new_block()
 
         elif isinstance(node, ast.Raise):
-            if node.inst:
-                print "node inst!!" + ast.dump(node.inst)
-            if node.tback:
-                print "node tback!!" + ast.dump(node.inst)
+            # if node.inst:
+            #     print "node inst!!" + ast.dump(node.inst)
+            # if node.tback:
+            #     print "node tback!!" + ast.dump(node.tback)
             if self.current_block.statements:
                 raise_block = self.new_block(type)
                 self.current_block.add_exit(raise_block)
@@ -511,6 +514,8 @@ class CFGBuilder():
                         _after_block.add_exit(self.current_block)
                         self.current_block = _after_block
 
+                        if isinstance(tryobj.node,str):
+                            print "String2"
                         for child in tryobj.node.finalbody:
                             if isinstance(child, ast.Raise):
                                 break
@@ -522,6 +527,8 @@ class CFGBuilder():
                         self.current_block.add_exit(_after_block)
                         _after_block.add_exit(self.current_block)
                         self.current_block = _after_block
+                        if isinstance(tryobj.node,str):
+                            print "String3"
                         for child in tryobj.node.finalbody:
                             if isinstance(child, ast.Raise):
                                 break
@@ -534,6 +541,9 @@ class CFGBuilder():
                     self.current_block.add_exit(_after_block)
                     self.current_block = _after_block
 
+                    if isinstance(tryobj.node,str):
+                            print "String4"
+                            print tryobj.node
                     for child in tryobj.node.finalbody:
                         if isinstance(child, ast.Raise):
                             top = self.try_stack.popleft()
@@ -556,7 +566,7 @@ class CFGBuilder():
          
         elif isinstance(node, ast.TryExcept) or isinstance(node, ast.TryFinally):
             f = isinstance(node, ast.TryFinally) #true if finally
-            try_block = self.new_try_block(node,type)
+            try_block = self.new_try_block(type=type)
             after_tryblock = self.new_block()
             self.current_block.add_exit(try_block)
             stackobj = TryStackObject(try_block, after_tryblock, f)
@@ -594,6 +604,9 @@ class CFGBuilder():
             self.current_block = after_tryblock
             if f:
                 stackobj.iter_state = TryEnum.FINAL
+
+                if isinstance(node,str):
+                            print "String5"
                 for child3 in node.finalbody:
                     if isinstance(child3, ast.Raise):
                         top = self.try_stack.popleft()
