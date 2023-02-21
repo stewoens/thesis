@@ -10,7 +10,7 @@ import os
 import aenum
 
 test = r"C:/Users/ninas/OneDrive/Documents/UNI/Productive-Bachelors/example.py"
-stmnt_types = ['Module' , 'If', 'For', 'While', 'Break', 'Continue', 'ExceptHandler', 'With','ClassDef','FunctionDef']
+stmnt_types = ['Module' , 'If', 'For', 'While', 'Break', 'Continue', 'ExceptHandler', 'With','ClassDef','FunctionDef','TryExcept','TryFinally']
 
 def invert(node): #: Union[Compare, ast.expr]
     """
