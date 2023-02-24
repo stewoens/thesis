@@ -136,7 +136,8 @@ class CFGBuilder():
         self.clean_cfg(self.cfg.entryblock, set())
         return self.cfg
     
-        def new_block(self, type=None, statement=None):
+
+    def new_block(self, type=None, statement=None):
             """
             Create a new block with a new id.
 
@@ -150,8 +151,6 @@ class CFGBuilder():
             if statement is not None:
                 block.add_statement(statement)
             return block
-
-
 
     def new_try_block(self,type =None, statement=None):
         self.current_id += 1
@@ -510,7 +509,6 @@ class CFGBuilder():
 
         elif isinstance(node, ast.Break):
             assert self.loop_stack
-            after_block: Block
             after_block, _ = self.loop_stack[0]
             self.current_block.add_statement(node)
             self.current_block.add_exit(after_block)
