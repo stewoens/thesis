@@ -2,6 +2,7 @@ from DATA.parse_python import parse_file, read_file_to_string
 #from parse_cfg import parse_file_2cfg
 from build import main
 import os
+import traceback
 import sys
 import ast
 
@@ -58,6 +59,7 @@ def data_parser_cfg():
                         i = i+1
                 except Exception as e:
                         errorlog.write(path + " " + str(e) +" " + "\n")
+                        errorlog.write(traceback.format_exc() + "\n")
     print "finished :)"
     return
 
