@@ -359,6 +359,9 @@ class CFGBuilder():
                         _after_block.add_exit(self.current_block)
                         self.current_block = _after_block
 
+                        # if not hasattr(tryobj.node, "finalbody"):
+                        #     print str(1)
+                        #     print tryobj.node
                         for child in tryobj.node.finalbody:
                             if isinstance(child, ast.Raise):
                                 break
@@ -370,6 +373,9 @@ class CFGBuilder():
                         self.current_block.add_exit(_after_block)
                         _after_block.add_exit(self.current_block)
                         self.current_block = _after_block
+                        # if not hasattr(tryobj.node, "finalbody"):
+                        #     print str(2) 
+                        #     print tryobj.node
                         for child in tryobj.node.finalbody:
                             if isinstance(child, ast.Raise):
                                 break
@@ -382,6 +388,9 @@ class CFGBuilder():
                     self.current_block.add_exit(_after_block)
                     self.current_block = _after_block
 
+                    # if not hasattr(tryobj.node, "finalbody"):
+                    #         print str(3) 
+                    #         print tryobj.node
                     for child in tryobj.node.finalbody: #string4
                         if isinstance(child, ast.Raise):
                             top = self.try_stack.popleft()
@@ -444,7 +453,7 @@ class CFGBuilder():
             self.current_block = afterif_block
         
         elif isinstance(node, ast.While):
-        # TODO while/else
+            # TODO while/else
 
             loop_guard = self.new_loopguard()
             self.current_block = loop_guard
@@ -550,6 +559,9 @@ class CFGBuilder():
                     self.current_block.add_exit(after_return)
                     after_return.add_exit(self.current_block)
                     self.current_block = after_return
+                    # if not hasattr(stackobj.node, "finalbody"):
+                    #         print str(4) 
+                    #         print stackobj.node
                     for child in stackobj.node.finalbody:
                         self.traverse(child)
 
@@ -558,49 +570,24 @@ class CFGBuilder():
             # the return statement will not be included in the CFG.
             self.current_block = self.new_block()
 
-        elif isinstance(node, ast.TryExcept) or isinstance(node, ast.TryFinally):
-            f = isinstance(node, ast.TryFinally) #true if finally
-            try_block = self.new_try_block(type=type)
+        elif  isinstance(node, ast.TryFinally):
+            try_block = self.new_try_block(type=type,statement=node)
             after_tryblock = self.new_block()
             self.current_block.add_exit(try_block)
-            stackobj = TryStackObject(try_block, after_tryblock, f)
+            stackobj = TryStackObject(try_block, after_tryblock, bool(node.finalbody))
+            #print stackobj.try_block.statements
             self.try_stack.appendleft(stackobj)
-
-            stackobj.iter_state = TryEnum.EXCEPT
-            
-            if not f:
-                for child in node.handlers:
-                    self.current_block = self.new_block()
-                    # If we encounter a raise statement during body iteration,
-                    # we can link the raise block to the appropriate exception block (if any).
-                    try:
-                        try_block.except_blocks[
-                            None if child.type is None else child.type.id  # type: ignore
-                        ] = self.current_block
-                    except:
-                        try_block.except_blocks[None] = self.current_block
-                    self.traverse(child)
 
             stackobj.iter_state = TryEnum.BODY
             self.current_block = try_block
             for child1 in node.body:
                 self.traverse(child1)
 
-            if not f:
-                stackobj.iter_state = TryEnum.ELSE
-                else_block = self.new_block()
-                self.current_block.add_exit(else_block)
-                self.current_block = else_block
-                for child2 in node.orelse:
-                    self.traverse(child2)
-
             self.current_block.add_exit(after_tryblock)
             self.current_block = after_tryblock
-            if f:
-                stackobj.iter_state = TryEnum.FINAL
 
-                if isinstance(node,str):
-                            print "String5"
+            if node.finalbody:
+                stackobj.iter_state = TryEnum.FINAL
                 for child3 in node.finalbody:
                     if isinstance(child3, ast.Raise):
                         top = self.try_stack.popleft()
@@ -612,6 +599,50 @@ class CFGBuilder():
                     next_block = self.new_block()
                     self.current_block.add_exit(next_block)
                     self.current_block = next_block
+
+        elif isinstance(node, ast.TryExcept):
+            try_block = self.new_try_block(type=type,statement=node)
+            after_tryblock = self.new_block()
+            self.current_block.add_exit(try_block)
+            stackobj = TryStackObject(try_block, after_tryblock, False)
+            self.try_stack.appendleft(stackobj)
+
+            stackobj.iter_state = TryEnum.BODY
+            self.current_block = try_block
+            for child1 in node.body:
+                self.traverse(child1)
+
+        
+            self.current_block.add_exit(after_tryblock)
+            self.current_block = after_tryblock
+                
+            for child in node.handlers:
+                self.current_block = self.new_block()
+                # If we encounter a raise statement during body iteration,
+                # we can link the raise block to the appropriate exception block (if any).
+                try:
+                    try_block.except_blocks[
+                        None if child.type is None else child.type.id  # type: ignore
+                    ] = self.current_block
+                except:
+                    try_block.except_blocks[None] = self.current_block
+                self.traverse(child)
+
+            stackobj.iter_state = TryEnum.BODY
+            self.current_block = try_block
+            for child1 in node.body:
+                self.traverse(child1)
+
+            
+            stackobj.iter_state = TryEnum.ELSE
+            else_block = self.new_block()
+            self.current_block.add_exit(else_block)
+            self.current_block = else_block
+            for child2 in node.orelse:
+                self.traverse(child2)
+
+            self.current_block.add_exit(after_tryblock)
+            self.current_block = after_tryblock
 
             del self.try_stack[0]
 
