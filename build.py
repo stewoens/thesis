@@ -257,7 +257,6 @@ class CFGBuilder():
         visited.add(block)
          
         dict = block.get_dict()
-        #print dict
         mylist.append(dict)
         modifiedlist = mylist
         for exit in block.exits:
@@ -301,6 +300,15 @@ class CFGBuilder():
                 self.traverse(child) 
 
         elif isinstance(node, ast.Raise):
+            # if node.type:
+            #     print "type:"
+            #     print node.type
+            # if node.inst:
+            #     print "inst:"
+            #     print node.inst
+            # if node.tback:
+            #     print "tback:"
+            #     print node.tback
 
             if self.current_block.statements:
                 raise_block = self.new_block(type)
@@ -314,12 +322,20 @@ class CFGBuilder():
                 # If we don't know where control jumps, this is the last block
                 self.current_block = self.new_block(type)
                 return
+            
             if isinstance(node.type, ast.Call):
-                e_id = node.type.func.id
+                if isinstance(node.type.func, ast.Attribute):
+                    if isinstance(node.type.func.value, ast.Attribute):
+                        e_id = node.type.func.value.value.id
+                    else:
+                        e_id = node.type.func.value.id
+                else: e_id = node.type.func.id
             elif isinstance(node.type, ast.Name):
                 e_id = node.type.id
             else:
                 raise ValueError("Unexpected object {1}".format(node.type))
+            
+            
 
             for tryobj in list(self.try_stack):
 
@@ -359,9 +375,6 @@ class CFGBuilder():
                         _after_block.add_exit(self.current_block)
                         self.current_block = _after_block
 
-                        # if not hasattr(tryobj.node, "finalbody"):
-                        #     print str(1)
-                        #     print tryobj.node
                         for child in tryobj.node.finalbody:
                             if isinstance(child, ast.Raise):
                                 break
@@ -373,9 +386,7 @@ class CFGBuilder():
                         self.current_block.add_exit(_after_block)
                         _after_block.add_exit(self.current_block)
                         self.current_block = _after_block
-                        # if not hasattr(tryobj.node, "finalbody"):
-                        #     print str(2) 
-                        #     print tryobj.node
+
                         for child in tryobj.node.finalbody:
                             if isinstance(child, ast.Raise):
                                 break
@@ -388,9 +399,6 @@ class CFGBuilder():
                     self.current_block.add_exit(_after_block)
                     self.current_block = _after_block
 
-                    # if not hasattr(tryobj.node, "finalbody"):
-                    #         print str(3) 
-                    #         print tryobj.node
                     for child in tryobj.node.finalbody: #string4
                         if isinstance(child, ast.Raise):
                             top = self.try_stack.popleft()
@@ -559,9 +567,7 @@ class CFGBuilder():
                     self.current_block.add_exit(after_return)
                     after_return.add_exit(self.current_block)
                     self.current_block = after_return
-                    # if not hasattr(stackobj.node, "finalbody"):
-                    #         print str(4) 
-                    #         print stackobj.node
+
                     for child in stackobj.node.finalbody:
                         self.traverse(child)
 
@@ -575,7 +581,6 @@ class CFGBuilder():
             after_tryblock = self.new_block()
             self.current_block.add_exit(try_block)
             stackobj = TryStackObject(try_block, after_tryblock, bool(node.finalbody))
-            #print stackobj.try_block.statements
             self.try_stack.appendleft(stackobj)
 
             stackobj.iter_state = TryEnum.BODY
@@ -672,4 +677,4 @@ def main(path):
 
 
 #main('\\\\?\\C:\\Users\\ninas\\OneDrive\\Documents\\UNI\\Productive-Bachelors\\DATA\\data2\\00\\wikihouse\\asset.py')
-main('\\\\?\\C:\\Users\\ninas\\OneDrive\\Documents\\UNI\\Productive-Bachelors\\example.py')
+#main('\\\\?\\C:\\Users\\ninas\\OneDrive\\Documents\\UNI\\Productive-Bachelors\\example.py')
