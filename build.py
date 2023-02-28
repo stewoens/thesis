@@ -332,9 +332,17 @@ class CFGBuilder():
                 else: e_id = node.type.func.id
             elif isinstance(node.type, ast.Name):
                 e_id = node.type.id
+            elif isinstance(node.type, ast.Str):
+                e_id = node.type.s
+            elif isinstance(node.type, ast.Subscript):
+                e_id = node.type.value.id
+                raise ValueError("Subscript in Raise Statement")
+            elif isinstance(node.type, ast.Attribute):
+                e_id = node.type.attr
+            elif isinstance(node.type, None):
+                e_id =node.type
             else:
-                raise ValueError("Unexpected object {1}".format(node.type))
-            
+                raise ValueError("Unexpected object {0}".format(node.type))
             
 
             for tryobj in list(self.try_stack):
