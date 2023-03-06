@@ -1,0 +1,6 @@
+import ast
+
+print "hello"
+
+class meh(object):
+    s = "wow!"
