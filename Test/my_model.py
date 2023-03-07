@@ -1,6 +1,6 @@
 
 import ast
-from parse_python import traverse
+#from parse_python import traverse
 from typing import Any, Deque, Tuple, List, Optional, Iterator, Set, Dict
 
 class CFG(object):
@@ -239,8 +239,9 @@ class CFGBlock(object):
         text =[]
         for i in block.statements:
             if isinstance(i, ast.AST):
-                print True
                 text.append(ast.dump(i))
+            else: 
+                text.append(i)
         type = block.type
         children =[]
         for i in block.exits:
@@ -251,7 +252,7 @@ class CFGBlock(object):
         if type in ['If', 'True_Case','False_case','While','For'] or True:
             dict = {"id": id,"text":text, "children": children, "type": type}
         else:
-            dict = {"id": id, "children": children, "type": type}
+            dict = {'id': id, 'children': children, 'type': type}
         return dict
 
 class TryBlock(CFGBlock):

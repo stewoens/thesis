@@ -7,12 +7,12 @@ import ast
 
 # ---------- parse pyhon2 files to cfg with parse_cfg.py ---------- #
 
-examples = r"C:/Users/ninas/OneDrive/Documents/UNI/Productive-Bachelors/DATA/data2"
+data = r"C:/Users/ninas/OneDrive/Documents/UNI/Productive-Bachelors/DATA/data2"
+examples = r"C:/Users/ninas/OneDrive/Documents/UNI/Productive-Bachelors/Test/examples"
 output ='OUTPUT/my_dataset_cfg'
 
 def prep_path(path):
     x = '\\\\?\\' + path.replace('/','\\')
-    print "hello"
     return x
 
 
@@ -33,13 +33,13 @@ def parse_data(f):
                     with open(path, 'r', )as f:
                         print >>out, main(path)
                         s = "done " + str(i)
-                        print s
-                        i = i+1
+                        # print s
+                        # i = i+1
                 except Exception as e:
                         errorlog.write(path + " " + str(e) + "\n")
                         # errorlog.write(traceback.format_exc() + "\n")
-    print "finished :)"
-    return
+    #print "finish"
+    return output
 
 parse_data(examples)
 

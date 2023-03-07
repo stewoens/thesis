@@ -681,9 +681,7 @@ def main(path):
     cfg = cfgb.build(tree ,path)
 
 
-    return cfgb.show_blocks(cfg.entryblock, set(),mylist=[]), 
-
-    return 
+    return cfgb.show_blocks(cfg.entryblock, set(),mylist=[])
 
 #main('\\\\?\\C:\\Users\\ninas\\OneDrive\\Documents\\UNI\\Productive-Bachelors\\DATA\\data2\\00\\wikihouse\\asset.py')
 #main('\\\\?\\C:\\Users\\ninas\\OneDrive\\Documents\\UNI\\Productive-Bachelors\\example.py')
