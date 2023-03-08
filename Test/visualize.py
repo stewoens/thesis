@@ -13,35 +13,34 @@ def change_nodes(cfg):
 
 
 
-graph = pydot.Dot(graph_type='graph')
+# graph = pydot.Dot(graph_type='graph')
 
 def draw(parent_name, child_name):
     edge = pydot.Edge(parent_name, child_name)
     graph.add_edge(edge)
     
 def visit(cfg, parent=None):
-    
-    #print "cfg", cfg
+    graph = pydot.Dot(graph_type='graph')
     conv = eval(cfg)
-    print conv
     for dic in conv:
-        print dic
         for child in dic.get('children'):
-            draw(dic.get('type'), conv[child].get('type'))
-
+            edge = pydot.Edge(dic.get('type'), conv[child].get('type'))
+            graph.add_edge(edge)
+            # draw(dic.get('type'), conv[child].get('type'))
     return graph
-    
-        # for k,v in cfg.iteritems():# If using python3, use cfg.items() instead of cfg.iteritems()
-        #     if isinstance(v, dict):
-        #         # We start with the root cfg whose parent is None
-        #         # we don't want to graph the None cfg
-        #         if parent:
-        #             draw(parent, k)
-        #         visit(v, k)
-        #     else:
-        #         draw(parent, k)
-        #         # drawing the label using a distinct name
-        #         draw(k, k+'_'+v)
+
+
+    # for k,v in cfg.iteritems():# If using python3, use cfg.items() instead of cfg.iteritems()
+    #     if isinstance(v, dict):
+    #         # We start with the root cfg whose parent is None
+    #         # we don't want to graph the None cfg
+    #         if parent:
+    #             draw(parent, k)
+    #         visit(v, k)
+    #     else:
+    #         draw(parent, k)
+    #         # drawing the label using a distinct name
+    #         draw(k, k+'_'+v)
 
 # graph = pydot.Dot(graph_type='graph')
 # visit(menu)

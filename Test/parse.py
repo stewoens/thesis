@@ -15,6 +15,9 @@ def prep_path(path):
     x = '\\\\?\\' + path.replace('/','\\')
     return x
 
+def unprep_path(path):
+    x = path.replace('\\\\?\\','').replace('\\','/')
+
 
 def test_output_cfg():           
     with open(output_cfg,'w') as out, open(path, 'r')as f:
@@ -23,22 +26,23 @@ def test_output_cfg():
 
 def parse_data(f):
     i =0
-    with open(output,'w') as out, open('OUTPUT/errorlog2.txt', 'w') as errorlog:
+    with open(output,'w') as out, open('OUTPUT/err_parse.txt', 'w') as errorlog:
         for root, _, files in os.walk(f):
             for file in files:
-                if i > 100:
-                    return 
+                if i > 10:
+                    return output
                 path = prep_path(os.path.join(root, file))
                 try:
                     with open(path, 'r', )as f:
                         print >>out, main(path)
                         s = "done " + str(i)
-                        # print s
-                        # i = i+1
+                        print s
+                        i = i+1
                 except Exception as e:
                         errorlog.write(path + " " + str(e) + "\n")
                         # errorlog.write(traceback.format_exc() + "\n")
-    #print "finish"
+                        i += 1
+    print "finish"
     return output
 
 parse_data(examples)

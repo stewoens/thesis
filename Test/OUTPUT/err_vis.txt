@@ -1,0 +1,76 @@
+00\wikihouse\asset.py sequence item 2: expected string, NoneType found
+Traceback (most recent call last):
+  File "c:/Users/ninas/OneDrive/Documents/UNI/Productive-Bachelors/Test/test.py", line 20, in <module>
+    graph.write_png('OUTPUT/example{0}_graph.png'.format(j))
+  File "C:\Python27\lib\site-packages\pydot.py", line 1745, in new_method
+    encoding=encoding)
+  File "C:\Python27\lib\site-packages\pydot.py", line 1828, in write
+    s = self.create(prog, format, encoding=encoding)
+  File "C:\Python27\lib\site-packages\pydot.py", line 1905, in create
+    self.write(tmp_name, encoding=encoding)
+  File "C:\Python27\lib\site-packages\pydot.py", line 1822, in write
+    s = self.to_string()
+  File "C:\Python27\lib\site-packages\pydot.py", line 1574, in to_string
+    graph.append( edge.to_string() + '\n' )
+  File "C:\Python27\lib\site-packages\pydot.py", line 881, in to_string
+    return ' '.join(edge) + ';'
+TypeError: sequence item 2: expected string, NoneType found
+
+00\wikihouse\auth.py sequence item 2: expected string, NoneType found
+Traceback (most recent call last):
+  File "c:/Users/ninas/OneDrive/Documents/UNI/Productive-Bachelors/Test/test.py", line 20, in <module>
+    graph.write_png('OUTPUT/example{0}_graph.png'.format(j))
+  File "C:\Python27\lib\site-packages\pydot.py", line 1745, in new_method
+    encoding=encoding)
+  File "C:\Python27\lib\site-packages\pydot.py", line 1828, in write
+    s = self.create(prog, format, encoding=encoding)
+  File "C:\Python27\lib\site-packages\pydot.py", line 1905, in create
+    self.write(tmp_name, encoding=encoding)
+  File "C:\Python27\lib\site-packages\pydot.py", line 1822, in write
+    s = self.to_string()
+  File "C:\Python27\lib\site-packages\pydot.py", line 1574, in to_string
+    graph.append( edge.to_string() + '\n' )
+  File "C:\Python27\lib\site-packages\pydot.py", line 881, in to_string
+    return ' '.join(edge) + ';'
+TypeError: sequence item 2: expected string, NoneType found
+
+00\wikihouse\bootstrap.py list index out of range
+Traceback (most recent call last):
+  File "c:/Users/ninas/OneDrive/Documents/UNI/Productive-Bachelors/Test/test.py", line 19, in <module>
+    graph = visit(line)
+  File "c:\Users\ninas\OneDrive\Documents\UNI\Productive-Bachelors\Test\visualize.py", line 27, in visit
+    edge = pydot.Edge(dic.get('type'), conv[child].get('type'))
+IndexError: list index out of range
+
+00\wikihouse\config.py list index out of range
+Traceback (most recent call last):
+  File "c:/Users/ninas/OneDrive/Documents/UNI/Productive-Bachelors/Test/test.py", line 19, in <module>
+    graph = visit(line)
+  File "c:\Users\ninas\OneDrive\Documents\UNI\Productive-Bachelors\Test\visualize.py", line 27, in visit
+    edge = pydot.Edge(dic.get('type'), conv[child].get('type'))
+IndexError: list index out of range
+
+00\wikihouse\utils.py list index out of range
+Traceback (most recent call last):
+  File "c:/Users/ninas/OneDrive/Documents/UNI/Productive-Bachelors/Test/test.py", line 19, in <module>
+    graph = visit(line)
+  File "c:\Users\ninas\OneDrive\Documents\UNI\Productive-Bachelors\Test\visualize.py", line 27, in visit
+    edge = pydot.Edge(dic.get('type'), conv[child].get('type'))
+IndexError: list index out of range
+
+00\wikihouse\view.py list index out of range
+Traceback (most recent call last):
+  File "c:/Users/ninas/OneDrive/Documents/UNI/Productive-Bachelors/Test/test.py", line 19, in <module>
+    graph = visit(line)
+  File "c:\Users\ninas\OneDrive\Documents\UNI\Productive-Bachelors\Test\visualize.py", line 27, in visit
+    edge = pydot.Edge(dic.get('type'), conv[child].get('type'))
+IndexError: list index out of range
+
+05bit\django-smarter\setup.py list index out of range
+Traceback (most recent call last):
+  File "c:/Users/ninas/OneDrive/Documents/UNI/Productive-Bachelors/Test/test.py", line 19, in <module>
+    graph = visit(line)
+  File "c:\Users\ninas\OneDrive\Documents\UNI\Productive-Bachelors\Test\visualize.py", line 27, in visit
+    edge = pydot.Edge(dic.get('type'), conv[child].get('type'))
+IndexError: list index out of range
+

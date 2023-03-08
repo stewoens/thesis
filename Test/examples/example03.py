@@ -1,0 +1,3 @@
+import ast
+
+print "hello"
