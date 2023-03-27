@@ -36,7 +36,7 @@ def invert(node): #: Union[Compare, ast.expr]
     }
 
     if isinstance(node, ast.Compare):
-        op = type(node.ops[0])
+        op = type(node.ops[0])     #WHATISTHIS
         # inverse_Node is [ast.NameConstant, ast.UnaryOp, Compare]
         inverse_node = ast.Compare(left=node.left, ops=[inverse[op]()], comparators=node.comparators)
     elif isinstance(node, ast.Name) and node.id in [True, False]:
@@ -204,7 +204,7 @@ class CFGBuilder():
 
         return loopguard
 
-# ---------- Building methods ---------- #
+    # ---------- Building methods ---------- #
 
     
     def clean_cfg(self, block, visited):
@@ -272,11 +272,11 @@ class CFGBuilder():
             tree (AST): the tree to be walked
         """
         
-        type= node.__class__.__name__
+        typ = node.__class__.__name__
     
         if isinstance(node, ast.Module):
             if self.current_block.statements:
-                mod_block = self.new_block(type)
+                mod_block = self.new_block(typ)
                 self.add_statement(mod_block, path)
                 self.add_exit(self.current_block, mod_block)
                 self.current_block = mod_block
@@ -311,7 +311,7 @@ class CFGBuilder():
             #     print node.tback
 
             if self.current_block.statements:
-                raise_block = self.new_block(type)
+                raise_block = self.new_block(typ)
                 self.current_block.add_exit(raise_block)
                 self.current_block = raise_block
             else:
@@ -320,7 +320,7 @@ class CFGBuilder():
             if not self.try_stack:
                 # Raise statement outside of try block
                 # If we don't know where control jumps, this is the last block
-                self.current_block = self.new_block(type)
+                self.current_block = self.new_block(typ)
                 return
             
             if isinstance(node.type, ast.Call):
@@ -431,7 +431,7 @@ class CFGBuilder():
             # If it already has something in it, we make a new block
             if self.current_block.statements:
                 # Add the If statement at the beginning of the new block.
-                cond_block = self.new_block(type)
+                cond_block = self.new_block(typ)
                 self.add_statement(cond_block, node.test)
                 self.add_exit(self.current_block, cond_block)
                 self.current_block = cond_block
@@ -473,12 +473,12 @@ class CFGBuilder():
 
             loop_guard = self.new_loopguard()
             self.current_block = loop_guard
-            #self.current_block.type =type
+            #self.current_block.type =typ
             self.add_statement(self.current_block,node.test)
 
             
             # New block for the case where the test in the while is True.
-            while_block = self.new_block(type)
+            while_block = self.new_block(typ)
             self.add_exit(self.current_block, while_block, node.test)
 
             # New block for the case where the test in the while is False.
@@ -503,12 +503,12 @@ class CFGBuilder():
 
             loop_guard = self.new_loopguard()
             self.current_block = loop_guard
-            #self.current_block.type =type
+            #self.current_block.type =typ
             self.add_statement(self.current_block, node.target)
             self.add_statement(self.current_block,node.iter)
 
             # New block for the body of the for-loop.
-            for_block = self.new_block(type)
+            for_block = self.new_block(typ)
             self.add_exit(self.current_block, for_block, node.iter)
 
             # Block of code after the for loop.
@@ -550,7 +550,7 @@ class CFGBuilder():
         elif isinstance(node,ast.FunctionDef):
             if self.current_block.statements:
 
-                func_block = self.new_block(type)
+                func_block = self.new_block(typ)
                 self.add_statement(func_block,node.name)
                 self.add_exit(self.current_block, func_block)
                 self.current_block = func_block
@@ -562,7 +562,7 @@ class CFGBuilder():
 
         elif isinstance(node, ast.Return):
             if self.current_block.statements:
-                return_block = self.new_block(type)
+                return_block = self.new_block(typ)
                 self.current_block.add_exit(return_block)
                 self.current_block = return_block
 
@@ -585,7 +585,7 @@ class CFGBuilder():
             self.current_block = self.new_block()
 
         elif  isinstance(node, ast.TryFinally):
-            try_block = self.new_try_block(type=type,statement=node)
+            try_block = self.new_try_block(type=typ,statement=node)
             after_tryblock = self.new_block()
             self.current_block.add_exit(try_block)
             stackobj = TryStackObject(try_block, after_tryblock, bool(node.finalbody))
@@ -614,7 +614,7 @@ class CFGBuilder():
                     self.current_block = next_block
 
         elif isinstance(node, ast.TryExcept):
-            try_block = self.new_try_block(type=type,statement=node)
+            try_block = self.new_try_block(type=typ,statement=node)
             after_tryblock = self.new_block()
             self.current_block.add_exit(try_block)
             stackobj = TryStackObject(try_block, after_tryblock, False)
@@ -665,14 +665,14 @@ class CFGBuilder():
             #if the parent is a cfg node, a new node is created
             if self.current_block.type in stmnt_types:
                 current_block = self.current_block
-                new_block = self.new_block(type)
+                new_block = self.new_block(typ)
                 self.add_exit(current_block, new_block)
                 self.current_block =new_block
             
             
             self.add_statement(self.current_block,  node)
             if self.current_block.type == None:
-                self.current_block.type = type
+                self.current_block.type = typ
         
    
 def main(path):

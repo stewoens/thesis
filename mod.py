@@ -233,3 +233,10 @@ class TryBlock(CFGBlock):
                 src += astor.to_source(statement)
         return src
 
+class FuncBlock(CFGBlock):
+    __slots__ = ("args", "name")
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.args = []
+        self.name= None
