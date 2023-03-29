@@ -2,51 +2,99 @@
 import ast
 from typing import Any, Deque, Tuple, List, Optional, Iterator, Set, Dict
 
-class CFG(object):
+class Block(object):
     """
-    Control flow graph (CFG).
+    CFG Block.
 
-    A control flow graph is composed of basic blocks and links between them
-    representing control flow jumps. It has a unique entry block and several
-    possible 'final' blocks (blocks with no exits representing the end of the
-    CFG).
+    A CFG Block contains statement, children and parents (and type?).
     """
 
-    # Also serves as graph Key table
-    # TODO Change value type to dict. Can be upacked into graph.node fn.
+    __slots__ = (
+        "id",
+        "statements",
+        "func_calls",
+        "predecessors",
+        "exits",
+        "func_blocks",
+        "highlight",
+        "outline",
+    )
 
-    def __init__(self, name):
-        assert isinstance(name, str), "Name of a CFG must be a string"
-        # Name of the function or module being represented.
-        self.name = name
-        # Entry block of the CFG.
-        self.entryblock = None
-        # Final blocks of the CFG.
-        self.finalblocks = []
+    def __init__(self, id):
+        # Id of the block.
+        self.id = id
+        # Statements in the block.
+        self.statements = []
+        # Calls to functions inside the block (represents context switches to
+        # some functions' CFGs).???
+        self.func_calls = []
+        # Links to predecessors in a control flow graph.
+        self.predecessors=[]
+        # Links to the next blocks in a control flow graph. 
+        self.exits =[]
+        # Function blocks within this block ???
+        self.func_blocks= []
+    
+    def at(self):
+        """
+        Get the line number of the first statement of the block in the program.
+        """
+        if self.statements and self.statements[0].lineno >= 0:
+            return self.statements[0].lineno
+        return -1
 
-        self.lineno = 0
-        self.end_lineno= 0
-        self.qualname = "" #dont know what this is for
+    def end(self):
+        """
+        Get the line number of the last statement of the block in the program.
+        """
+        if self.statements and self.statements[-1].lineno >= 0:
+            return self.statements[-1].lineno
+        return -1
+
+    def is_empty(self):
+        """
+        Check if the block is empty.
+
+        Returns:
+            A boolean indicating if the block is empty (True) or not (False).
+        """
+        return not self.statements
+
+    def type(self, default = None):
+        default = ast.AST if default is None else default
+        return type(self.statements[0]) if self.statements else default
+
+    def add_statement(self, node):
+        """
+        Ive made node be dump(node)so far but maybe can be node as well?
+        """
+        self.statements.append(node)
+    
+    #not sure how the exits work yet
+    def add_exit(self, next, exitcase=None):
+        link = Link(self, next, exitcase)
+        self.exits.append(link)
+        next.predecessors.append(link)
         
-    def own_blocks(self):
-        """
-            Generator that yields all blocks in the current graph, excluding any
-            subgraphs
-        """
-        visited = set()
-        if self.entryblock is None:
-            raise TypeError(
-                "Expected self.entryblock to be not None but type is None"
-            )
-        to_visit = deque([self.entryblock])
-        while to_visit:
-            block = to_visit.popleft()
-            visited.add(block)
-            for exit_ in block.exits:
-                if exit_.target in visited or exit_.target in to_visit:
-                    continue
-                to_visit.append(exit_.target)
-            yield block
+    def get_dict(block):   
+        id = block.id
+        try:
+            text = block.get_source()
+        except:
+            text =block.statements
+        type = block.type
+        children =[]
+        for i in block.exits:
+            children.append(i.target.id)
+        
+        
+        #text removed for orga
+        if type in ['If', 'True_Case','False_case','While','For'] or True:
+            dict = {"id": id,"text":text, "children": children, "type": type}
+        else:
+            dict = {"id": id, "children": children, "type": type}
+        return dict
+
 
 class Link(object):
     """
@@ -68,11 +116,11 @@ class Link(object):
         self,
         source,
         target,
-        exitcase = None, #ast- Compare
+        exitcase= None,
     ):
-        assert isinstance(target, CFGBlock), "Source of a link must be a block"
-        assert isinstance(target, CFGBlock), "Target of a link must be a block"
-        # CFGBlock from which the control flow jump was made.
+        assert isinstance(target, Block), "Source of a link must be a block"
+        assert isinstance(target, Block), "Target of a link must be a block"
+        # Block from which the control flow jump was made.
         self.source = source
         # Target block of the control flow jump.
         self.target = target
@@ -99,115 +147,19 @@ class Link(object):
 
     #potentially add exitcase but needs astor, which i couldnt get
     
-class CFGBlock(object):
-    """
-    CFG Block.
+class FuncBlock(Block):
+    __slots__ = ("args", "name")
 
-    A CFG Block contains statement, children and parents (and type?).
-    """
-    # def __init__(self, id,typ):
-    #     dict = {"id":id, "type":typ,"statement":[],"children":[],"parents":[]}
-    #     self.d= dict
-        
-    def __init__(self, id,type):
-        # Id of the block.
-        self.id = id
-        # Statements in the block.
-        self.statements = []
-        # type of the block
-        self.type =type
-        # Calls to functions inside the block (represents context switches to
-        # some functions' CFGs).???
-        self.func_calls = []
-        # Links to predecessors in a control flow graph.
-        self.predecessors= []
-        # Links to the next blocks in a control flow graph. 
-        self.exits = []
-        # Function blocks within this block ???
-        self.func_blocks = []
-    
-    # def get_source(self):
-    #     """
-    #     Get a string containing the Python source code corresponding to the
-    #     statements in the block.
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.args = []
+        self.name= None
 
-    #     Returns:
-    #         A string containing the source code of the statements.
-    #     """
-    #     src = ""
-    #     for statement in self.statements:
-            
-    #         if type(statement) in [ast.If, ast.For, ast.While]:
-    #             src += codegen.to_source(statement).split("\n")[0] + "\n"
-    #         elif (type(statement) == ast.FunctionDef or type(statement) == ast.FunctionDef):
-    #             src += (codegen.to_source(statement)).split("\n")[0] + "...\n"
-    #         else:
-    #             src += codegen.to_source(statement)
-    #     return src
-    
-    def at(self):
-        """
-        Get the line number of the first statement of the block in the program.
-        """
-        if self.statements and self.statements[0].lineno >= 0:
-            return self.statements[0].lineno
-        return -1
-
-    def end(self):
-        """
-        Get the line number of the last statement of the block in the program.
-        """
-        if self.statements and self.statements[-1].lineno >= 0:
-            return self.statements[-1].lineno
-        return -1     
-
-    def is_empty(self):
-        """
-        Check if the block is empty.
-
-        Returns:
-            A boolean indicating if the block is empty (True) or not (False).
-        """
-        return not self.statements
-
-    def add_statement(self, node):
-        """
-        Ive made node be dump(node)so far but maybe can be node as well?
-        """
-        self.statements.append(node)
-    
-    #not sure how the exits work yet
-    def add_exit(self, next, exitcase=None):
-        link = Link(self, next, exitcase)
-        self.exits.append(link)
-        next.predecessors.append(link)
-        
-    
-     
-    def get_dict(block):   
-        id = block.id
-        try:
-            text = block.get_source()
-        except:
-            text =block.statements
-        type = block.type
-        children =[]
-        for i in block.exits:
-            children.append(i.target.id)
-        
-        
-        #text removed for orga
-        if type in ['If', 'True_Case','False_case','While','For'] or True:
-            dict = {"id": id,"text":text, "children": children, "type": type}
-        else:
-            dict = {"id": id, "children": children, "type": type}
-        return dict
-
-class TryBlock(CFGBlock):
+class TryBlock(Block):
     __slots__ = ("except_blocks",)
 
-    def __init__(self, id, type):
-        super(TryBlock,self).__init__(id, type)
+    def __init__(self, id):
+        super(TryBlock,self).__init__(id)
         self.except_blocks = {}
 
     def get_source(self):
@@ -233,10 +185,56 @@ class TryBlock(CFGBlock):
                 src += astor.to_source(statement)
         return src
 
-class FuncBlock(CFGBlock):
-    __slots__ = ("args", "name")
+class CFG(object):
+    """
+    Control flow graph (CFG).
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.args = []
-        self.name= None
+    A control flow graph is composed of basic blocks and links between them
+    representing control flow jumps. It has a unique entry block and several
+    possible 'final' blocks (blocks with no exits representing the end of the
+    CFG).
+    """
+
+    # Also serves as graph Key table
+    # TODO Change value type to dict. Can be upacked into graph.node fn.
+
+    def __init__(self, name):
+        assert isinstance(name, str), "Name of a CFG must be a string"
+        # Name of the function or module being represented.
+        self.name = name
+        # Entry block of the CFG.
+        self.entryblock = None
+        # Final blocks of the CFG.
+        self.finalblocks = []
+        # Sub-CFGs for functions defined inside the current CFG.
+        self.functioncfgs = {}
+        # Sub-CFGs
+        self.classcfgs = {}
+
+        self.lineno = 0
+        self.end_lineno = 0
+        self.qualname = ""
+        
+    def own_blocks(self):
+        """
+            Generator that yields all blocks in the current graph, excluding any
+            subgraphs
+        """
+        visited = set()
+        if self.entryblock is None:
+            raise TypeError(
+                "Expected self.entryblock to be not None but type is None"
+            )
+        to_visit = deque([self.entryblock])
+        while to_visit:
+            block = to_visit.popleft()
+            visited.add(block)
+            for exit_ in block.exits:
+                if exit_.target in visited or exit_.target in to_visit:
+                    continue
+                to_visit.append(exit_.target)
+            yield block
+
+
+
+
