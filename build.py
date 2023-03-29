@@ -5,7 +5,7 @@ import ast
 from itertools import count
 from collections import defaultdict, deque
 from typing import Dict, List, Optional, DefaultDict, Deque, Set, Union
-from my_model import Link, TryBlock, CFGBlock, CFG
+from mod import Link, TryBlock, Block, CFG
 import os
 import aenum
 
@@ -77,6 +77,7 @@ class TryEnum(aenum.IntEnum):
     ELSE = aenum.auto()
     FINAL = aenum.auto()
 
+
 class TryStackObject:
     def __init__(self, try_block, after_block, has_final, iter_state = None,):
         self.try_block = try_block
@@ -101,11 +102,11 @@ class CFGBuilder():
         self.isShort = short
         self._callbuf = []
         self._treebuf = defaultdict(deque) if treebuf is None else treebuf
-    
+
     @property
     def loop_stack(self):
         return self._treebuf["loop_stack"]
-    
+
     @property
     def try_stack(self):
         return self._treebuf["try_stack"]
@@ -132,29 +133,38 @@ class CFGBuilder():
         self.current_block =self.new_block(tree.__class__.__name__)
         self.cfg.entryblock = self.current_block
         
-        self.traverse(tree,path)
+        self.traverse(tree)
         self.clean_cfg(self.cfg.entryblock, set())
         return self.cfg
     
 
-    def new_block(self, type=None, statement=None):
-            """
-            Create a new block with a new id.
+    # ---------- Graph management methods ---------- #
+    def new_block(self, statement=None):
+        """
+        Create a new block with a new id.
 
-            Returns:
-                A Block object with a new unique id.
-            """
-
-            if not type == "Module":
-                self.current_id += 1
-            block = CFGBlock(id =self.current_id, type =type)
-            if statement is not None:
-                block.add_statement(statement)
-            return block
-
-    def new_try_block(self,type =None, statement=None):
+        Returns:
+            A Block object with a new unique id.
+        """
         self.current_id += 1
-        block = TryBlock(id =self.current_id,type=type)
+        block = Block(self.current_id)
+        if statement is not None:
+            block.add_statement(statement)
+        return block
+
+    def new_func_block(self):
+        """
+        Create a new function block with a new id.
+
+        Returns:
+            A FuncBlock object with a new unique id.
+        """
+        self.current_id += 1
+        return FuncBlock(self.current_id)
+
+    def new_try_block(self, statement=None):
+        self.current_id += 1
+        block = TryBlock(self.current_id)
         if statement is not None:
             block.add_statement(statement)
         return block
@@ -168,8 +178,8 @@ class CFGBuilder():
             statement: An AST node representing the statement that must be
                        added to the current block.
         """
-        block.statements.append(statement) 
-        
+        block.statements.append(statement)
+
     def add_exit(self,block,nextblock,exitcase = None): #Union[Compare, None, ast.BoolOp, ast.expr]
         """"
         Add a new exit to a block.
@@ -184,7 +194,7 @@ class CFGBuilder():
         block.exits.append(newlink)
         nextblock.predecessors.append(newlink)
 
-    def new_loopguard(self):
+    def new_loopguard(self): #->Block
         """
         Create a new block for a loop's guard if the current block is not
         empty. Links the current block to the new loop guard.
@@ -206,7 +216,48 @@ class CFGBuilder():
 
     # ---------- Building methods ---------- #
 
-    
+    def new_classCFG(self, node, asynchr = False):
+        """
+        Create a new sub-CFG for a class definition and add it to the
+        class CFGs of the CFG being built.
+
+        Args:
+            node: The AST node containing the class definition.
+            async: Boolean indicating whether the class for which the CFG is
+                   being built is asynchronous or not.
+        """
+        self.current_id += 1
+        # A new sub-CFG is created for the body of the class definition and
+        # added to the class CFGs of the current CFG.
+        class_body = ast.Module(body=node.body)
+        class_builder = CFGBuilder(self.isShort, self._treebuf)
+        self.cfg.classcfgs[node.name]= classcfg = class_builder.build(
+            node.name, class_body, asynchr, self.current_id
+        )
+        classcfg.lineno = node.lineno
+#        classcfg.end_lineno = node.end_lineno  # type: ignore  #TODO something with ignore "'ClassDef' object has no attribute 'end_lineno'"
+        self.current_id = class_builder.current_id + 1
+
+    def new_functionCFG(self, node, asynchr):
+        """
+        Create a new sub-CFG for a function definition and add it to the
+        function CFGs of the CFG being built.
+
+        Args:
+            node: The AST node containing the function definition.
+            async: Boolean indicating whether the function for which the CFG is
+                   being built is asynchronous or not.
+        """
+        self.current_id += 1
+        # A new sub-CFG is created for the body of the function definition and
+        # added to the function CFGs of the current CFG.
+        func_body = ast.Module(body=node.body)
+        func_builder = CFGBuilder(self.isShort, self._treebuf)
+        cfg = self.cfg.functioncfgs[node.name]= func_builder.build(node.name, func_body, asynchr, self.current_id)
+        self.current_id = func_builder.current_id + 1
+        cfg.lineno = node.lineno
+        #cfg.end_lineno = node.end_lineno  # type: ignore   #TODO
+
     def clean_cfg(self, block, visited):
         
         """
@@ -262,6 +313,34 @@ class CFGBuilder():
         for exit in block.exits:
             modifiedlist = self.show_blocks(exit.target, visited, mylist)
         return modifiedlist
+
+    # ---------- AST Node visitor methods ---------- #
+
+
+    def visit(self, node):
+        """Visit a node."""
+        method = 'visit_' + node.__class__.__name__
+        visitor = getattr(self, method, self.generic_visit)
+        return visitor(node)
+
+    def generic_visit(self, node):
+        print "Generic visit_" +  node.__class__.__name__
+
+    def visit_Module(self, node):
+        if self.current_block.statements:
+            mod_block = self.new_block(typ)
+            self.add_statement(mod_block, path)
+            self.add_exit(self.current_block, mod_block)
+            self.current_block = mod_block
+        else:
+            self.add_statement(self.current_block, path)
+        
+        for child in node.body:
+            self.traverse(child)
+
+    def visit_ClassDef(self, node):
+        self.add_statement(self.current_block, node)
+        self.new_classCFG(node, asynchr=False)
 
 
     def traverse(self, node, path= None):
@@ -585,7 +664,7 @@ class CFGBuilder():
             self.current_block = self.new_block()
 
         elif  isinstance(node, ast.TryFinally):
-            try_block = self.new_try_block(type=typ,statement=node)
+            try_block = self.new_try_block(statement=node)
             after_tryblock = self.new_block()
             self.current_block.add_exit(try_block)
             stackobj = TryStackObject(try_block, after_tryblock, bool(node.finalbody))
@@ -614,7 +693,7 @@ class CFGBuilder():
                     self.current_block = next_block
 
         elif isinstance(node, ast.TryExcept):
-            try_block = self.new_try_block(type=typ,statement=node)
+            try_block = self.new_try_block(statement=node)
             after_tryblock = self.new_block()
             self.current_block.add_exit(try_block)
             stackobj = TryStackObject(try_block, after_tryblock, False)
