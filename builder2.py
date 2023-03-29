@@ -58,18 +58,16 @@ def invert(node): #: Union[Compare, ast.expr]
 
     if isinstance(node, ast.Compare):
         op = type(node.ops[0])
-        inverse_node = ast.Compare(
-            left=node.left, ops=[inverse[op]()], comparators=node.comparators
-        )
-    elif isinstance(node, ast.NameConstant) and node.value in [True, False]:
-        inverse_node = ast.NameConstant(value=not node.value)
+        inverse_node = ast.Compare(left=node.left, ops=[inverse[op]()], comparators=node.comparators)
+    elif isinstance(node, ast.Name) and node.id in [True, False]:
+        inverse_node = ast.Name(value=not node.id)
     else:
         inverse_node = ast.UnaryOp(op=ast.Not(), operand=node)
 
     return inverse_node
 
 
-def merge_exitcases( exit1,exit2,):
+def merge_exitcases(exit1,exit2,):
     """
     Merge the exitcases of two Links.
 
@@ -152,7 +150,6 @@ class CFGBuilder(ast.NodeVisitor):
         Returns:
             The CFG produced from the AST.
         """
-        print asynchr
         self.cfg = CFG(name) #removed asynchr =asynchr, short=self.isShort
         # Tracking of the current block while building the CFG.
         self.current_id = entry_id
@@ -274,6 +271,7 @@ class CFGBuilder(ast.NodeVisitor):
 
         return loopguard
 
+
     def new_classCFG(self, node, asynchr = False):
         """
         Create a new sub-CFG for a class definition and add it to the
@@ -289,11 +287,11 @@ class CFGBuilder(ast.NodeVisitor):
         # added to the class CFGs of the current CFG.
         class_body = ast.Module(body=node.body)
         class_builder = CFGBuilder(self.isShort, self._treebuf)
-        self.cfg.classcfgs[node.name], _ = classcfg,_ = class_builder.build(
+        self.cfg.classcfgs[node.name]= classcfg = class_builder.build(
             node.name, class_body, asynchr, self.current_id
         )
         classcfg.lineno = node.lineno
-        classcfg.end_lineno = node.end_lineno  # type: ignore
+#        classcfg.end_lineno = node.end_lineno  # type: ignore  #TODO something with ignore "'ClassDef' object has no attribute 'end_lineno'"
         self.current_id = class_builder.current_id + 1
 
     def new_functionCFG(self, node, asynchr):
@@ -311,12 +309,10 @@ class CFGBuilder(ast.NodeVisitor):
         # added to the function CFGs of the current CFG.
         func_body = ast.Module(body=node.body)
         func_builder = CFGBuilder(self.isShort, self._treebuf)
-        cfg, _ = self.cfg.functioncfgs[node.name],_= func_builder.build(
-            node.name, func_body, asynchr, self.current_id
-        )
+        cfg = self.cfg.functioncfgs[node.name]= func_builder.build(node.name, func_body, asynchr, self.current_id)
         self.current_id = func_builder.current_id + 1
         cfg.lineno = node.lineno
-        cfg.end_lineno = node.end_lineno  # type: ignore
+        #cfg.end_lineno = node.end_lineno  # type: ignore   #TODO
 
     def clean_cfg(self, block, visited):
         
@@ -406,8 +402,8 @@ class CFGBuilder(ast.NodeVisitor):
                     raise AttributeError(
                         "WTF is this thing, build it in??", type(node)
                     )
-            elif isinstance(node, ast.Constant):
-                return node.value
+            elif isinstance(node, ast.Str):
+                e_id = node.s
             elif isinstance(node, ast.Call):
                 if "id" in node.func._fields:
                     return node.func.id
