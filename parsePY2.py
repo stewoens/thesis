@@ -1,4 +1,4 @@
-from DATA.parse_python import parse_file, read_file_to_string
+from parse_python import parse_file, read_file_to_string
 #from parse_cfg import parse_file_2cfg
 from build import main
 import os
@@ -8,7 +8,7 @@ import ast
 
 # ---------- parse pyhon2 files to cfg with parse_cfg.py ---------- #
 
-data = r"C:/Users/ninas/OneDrive/Documents/UNI/Productive-Bachelors/DATA/data2"
+data = r"C:/Users/ninas/OneDrive/Documents/UNI/Thesis/DATA/data2"
 test = r"C:/Users/ninas/OneDrive/Documents/UNI/Productive-Bachelors/test_file.py"
 output_cfg ='OUTPUT/my_dataset_cfg'
 output_ast ='OUTPUT/my_dataset_ast'
@@ -45,7 +45,7 @@ def data_parser_cfg():
         for root, _, files in os.walk(data):
             for file in files:
                 test
-                if i > 10000:
+                if i > 10:
                      print "finished :)"
                      return
                 path = prep_path(os.path.join(root, file))
@@ -59,8 +59,9 @@ def data_parser_cfg():
                         i = i+1
                 except Exception as e:
                         errorlog.write(path + " " + str(e) + "\n")
+                        errorlog.write(traceback.format_exc() + "\n")
                         if  str(e) =="'Call' object has no attribute 'id'":
-                            errorlog.write(traceback.format_exc() + "\n")
+                            continue
     print "finished :)"
     return
 
