@@ -79,7 +79,7 @@ class Block(object):
             return self.statements[0].lineno
         return -1
 
-    def end(self) :
+    def end(self):
         """
         Get the line number of the last statement of the block in the program.
         """
@@ -217,7 +217,6 @@ class FuncBlock(Block):
         super(FuncBlock,self).__init__(*args, **kwargs)
         self.args = []
         self.name= None
-
 
 class TryBlock(Block):
     __slots__ = ("except_blocks",)
@@ -412,7 +411,7 @@ class CFG(object):
         for arg in block.args:
             self._visit_func(graph, arg, str(block.id), interactive=interactive)
 
-# TODO
+    	# TODO
     # def _visit_blocks(
     #     self,
     #     graph,
@@ -599,7 +598,7 @@ class CFG(object):
     #         graph.subgraph(subgraph)
     #     return graph
 
-#open
+    #open
     @staticmethod
     def border_style(block, interactive):
         if interactive:
