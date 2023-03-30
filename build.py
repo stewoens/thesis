@@ -132,8 +132,7 @@ class CFGBuilder():
         self.current_id = entry_id
         self.current_block =self.new_block()
         self.cfg.entryblock = self.current_block
-        self.visit(tree)
-        #self.traverse(tree)
+        self.traverse(tree,path)
         self.clean_cfg(self.cfg.entryblock, set())
         return self.cfg
     
@@ -316,7 +315,7 @@ class CFGBuilder():
 
     # ---------- AST Node visitor methods ---------- #
 
-    def traverse(self, node, path= None):
+    def traverse(self, node, name= None):
          
         """
         Walk along the AST to generate CFG
@@ -333,23 +332,27 @@ class CFGBuilder():
                 self.add_exit(self.current_block, mod_block)
                 self.current_block = mod_block
             else:
-                self.add_statement(self.current_block, path)
+                self.add_statement(self.current_block, name)
+            
+            next_block = self.new_block()
+            self.add_exit(self.current_block, next_block)
+            self.current_block = next_block
             
             for child in node.body:
-                self.traverse(child) 
+                self.traverse(child)
 
-        elif isinstance(node, ast.ClassDef):
-            if self.current_block.statements:
+        #elif isinstance(node, ast.ClassDef):
+            # if self.current_block.statements:
 
-                class_block = self.new_block()
-                self.add_statement(class_block,node.name)
-                self.add_exit(self.current_block, class_block)
-                self.current_block = class_block
-            elif self.current_block.type == "ClassDef":
-                self.add_statement(self.current_block, node.name)
+            #     class_block = self.new_block()
+            #     self.add_statement(class_block,node.name)
+            #     self.add_exit(self.current_block, class_block)
+            #     self.current_block = class_block
+            # elif self.current_block.type == "ClassDef":
+            #     self.add_statement(self.current_block, node.name)
 
-            for child in node.body:
-                self.traverse(child) 
+            # for child in node.body:
+            #     self.traverse(child) 
 
         elif isinstance(node, ast.Raise):
             # if node.type:
@@ -599,18 +602,18 @@ class CFGBuilder():
             self.add_exit(self.current_block, loop_guard)
             self.current_block = self.new_block()
         
-        elif isinstance(node,ast.FunctionDef):
-            if self.current_block.statements:
+        # elif isinstance(node,ast.FunctionDef):
+        #     if self.current_block.statements:
 
-                func_block = self.new_block()
-                self.add_statement(func_block,node.name)
-                self.add_exit(self.current_block, func_block)
-                self.current_block = func_block
-            elif self.current_block.type == 'FunctionDef':
-                self.add_statement(self.current_block, node.name)
+        #         func_block = self.new_block()
+        #         self.add_statement(func_block,node.name)
+        #         self.add_exit(self.current_block, func_block)
+        #         self.current_block = func_block
+        #     elif self.current_block.type == 'FunctionDef':
+        #         self.add_statement(self.current_block, node.name)
 
-            for child in node.body:
-                self.traverse(child) 
+        #     for child in node.body:
+        #         self.traverse(child) 
 
         elif isinstance(node, ast.Return):
             if self.current_block.statements:
@@ -714,23 +717,22 @@ class CFGBuilder():
 
         # ----------------GENERAL CASE--------------------#
         else:   
-            #if the parent is a cfg node, a new node is created
-            if self.current_block.type in stmnt_types:
+            print "this0"
+            #if the parent is a cfg node, a new node is createds     
+            if self.current_block.type() in stmnt_types:
+                print "this1"
                 current_block = self.current_block
                 new_block = self.new_block()
                 self.add_exit(current_block, new_block)
                 self.current_block =new_block
-            
-            
+            print "this2"
             self.add_statement(self.current_block,  node)
-            if self.current_block.type == None:
-                self.current_block.type = typ
         
    
-def main(path):
+def main(path, name):
     tree = ast.parse(read_file_to_string(path), path)
     cfgb = CFGBuilder()
-    cfg = cfgb.build(tree ,path)
+    cfg = cfgb.build(tree, name)
     
     return cfgb.show_blocks(cfg.entryblock, set(),mylist=[])
     
