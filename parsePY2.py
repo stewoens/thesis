@@ -45,23 +45,25 @@ def data_parser_cfg():
         for root, _, files in os.walk(data):
             for file in files:
                 test
-                if i > 10:
+                if i > 1:
                      print "finished :)"
                      return
                 path = prep_path(os.path.join(root, file))
                 try:
                     with open(path, 'r', )as f:
-                        print >>out, main(path)
+
+                        print >>out, main(path,name=file)
                         # tree =ast.parse(read_file_to_string(path), path)
                         # print >>out, ast.dump(tree)
                         s = "done " + str(i)
                         print s
                         i = i+1
                 except Exception as e:
-                        errorlog.write(path + " " + str(e) + "\n")
-                        errorlog.write(traceback.format_exc() + "\n")
-                        if  str(e) =="'Call' object has no attribute 'id'":
-                            continue
+                    i+=1
+                    errorlog.write(path + " " + str(e) + "\n")
+                    errorlog.write(traceback.format_exc() + "\n")
+                    if  str(e) =="'Call' object has no attribute 'id'":
+                        continue
     print "finished :)"
     return
 
