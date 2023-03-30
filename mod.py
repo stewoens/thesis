@@ -59,10 +59,17 @@ class Block(object):
             A boolean indicating if the block is empty (True) or not (False).
         """
         return not self.statements
+        
 
     def type(self, default = None):
-        default = ast.AST if default is None else default
-        return type(self.statements[0]) if self.statements else default
+        print "this3"
+        if default is None:
+            default = ast.AST
+        if self.statements:
+            if isinstance(self.statements[0],basestring):
+                return 'Module'
+            return self.statements[0].__class__.__name__
+        return default.__class__.__name__
 
     def add_statement(self, node):
         """
@@ -78,11 +85,8 @@ class Block(object):
         
     def get_dict(block):   
         id = block.id
-        try:
-            text = block.get_source()
-        except:
-            text =block.statements
-        type = block.type
+        text =block.statements
+        type = block.type()
         children =[]
         for i in block.exits:
             children.append(i.target.id)
