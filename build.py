@@ -130,10 +130,10 @@ class CFGBuilder():
         """
         self.cfg = CFG(path)
         self.current_id = entry_id
-        self.current_block =self.new_block(tree.__class__.__name__)
+        self.current_block =self.new_block()
         self.cfg.entryblock = self.current_block
-        
-        self.traverse(tree)
+        self.visit(tree)
+        #self.traverse(tree)
         self.clean_cfg(self.cfg.entryblock, set())
         return self.cfg
     
@@ -316,33 +316,6 @@ class CFGBuilder():
 
     # ---------- AST Node visitor methods ---------- #
 
-
-    def visit(self, node):
-        """Visit a node."""
-        method = 'visit_' + node.__class__.__name__
-        visitor = getattr(self, method, self.generic_visit)
-        return visitor(node)
-
-    def generic_visit(self, node):
-        print "Generic visit_" +  node.__class__.__name__
-
-    def visit_Module(self, node):
-        if self.current_block.statements:
-            mod_block = self.new_block(typ)
-            self.add_statement(mod_block, path)
-            self.add_exit(self.current_block, mod_block)
-            self.current_block = mod_block
-        else:
-            self.add_statement(self.current_block, path)
-        
-        for child in node.body:
-            self.traverse(child)
-
-    def visit_ClassDef(self, node):
-        self.add_statement(self.current_block, node)
-        self.new_classCFG(node, asynchr=False)
-
-
     def traverse(self, node, path= None):
          
         """
@@ -355,7 +328,7 @@ class CFGBuilder():
     
         if isinstance(node, ast.Module):
             if self.current_block.statements:
-                mod_block = self.new_block(typ)
+                mod_block = self.new_block()
                 self.add_statement(mod_block, path)
                 self.add_exit(self.current_block, mod_block)
                 self.current_block = mod_block
@@ -368,7 +341,7 @@ class CFGBuilder():
         elif isinstance(node, ast.ClassDef):
             if self.current_block.statements:
 
-                class_block = self.new_block(type)
+                class_block = self.new_block()
                 self.add_statement(class_block,node.name)
                 self.add_exit(self.current_block, class_block)
                 self.current_block = class_block
@@ -390,7 +363,7 @@ class CFGBuilder():
             #     print node.tback
 
             if self.current_block.statements:
-                raise_block = self.new_block(typ)
+                raise_block = self.new_block()
                 self.current_block.add_exit(raise_block)
                 self.current_block = raise_block
             else:
@@ -399,7 +372,7 @@ class CFGBuilder():
             if not self.try_stack:
                 # Raise statement outside of try block
                 # If we don't know where control jumps, this is the last block
-                self.current_block = self.new_block(typ)
+                self.current_block = self.new_block()
                 return
             
             if isinstance(node.type, ast.Call):
@@ -496,7 +469,7 @@ class CFGBuilder():
         elif isinstance(node,ast.Assert):
             self.add_statement(self.current_block, node)
             # New block for the case in which the assertion 'fails'.
-            failblock = self.new_block('Fail_Block')
+            failblock = self.new_block()
             self.add_exit(self.current_block, failblock, invert(node.test))
             # If the assertion fails, the current flow ends, so the fail block is a
             # final block of the CFG.
@@ -510,7 +483,7 @@ class CFGBuilder():
             # If it already has something in it, we make a new block
             if self.current_block.statements:
                 # Add the If statement at the beginning of the new block.
-                cond_block = self.new_block(typ)
+                cond_block = self.new_block()
                 self.add_statement(cond_block, node.test)
                 self.add_exit(self.current_block, cond_block)
                 self.current_block = cond_block
@@ -519,7 +492,7 @@ class CFGBuilder():
                 self.add_statement(self.current_block, node.test)
 
             # Create a new block for the body of the if. (storing the True case)
-            if_block = self.new_block('True_Case')
+            if_block = self.new_block()
 
             self.add_exit(self.current_block, if_block, node.test)
 
@@ -528,7 +501,7 @@ class CFGBuilder():
 
             # New block for the body of the else if there is an else clause.
             if node.orelse:
-                else_block = self.new_block("False_case")
+                else_block = self.new_block() #TODO false case
                 self.add_exit(self.current_block, else_block, invert(node.test))
                 self.current_block = else_block
                 # Visit the children in the body of the else to populate the block.
@@ -557,7 +530,7 @@ class CFGBuilder():
 
             
             # New block for the case where the test in the while is True.
-            while_block = self.new_block(typ)
+            while_block = self.new_block()
             self.add_exit(self.current_block, while_block, node.test)
 
             # New block for the case where the test in the while is False.
@@ -587,7 +560,7 @@ class CFGBuilder():
             self.add_statement(self.current_block,node.iter)
 
             # New block for the body of the for-loop.
-            for_block = self.new_block(typ)
+            for_block = self.new_block()
             self.add_exit(self.current_block, for_block, node.iter)
 
             # Block of code after the for loop.
@@ -629,7 +602,7 @@ class CFGBuilder():
         elif isinstance(node,ast.FunctionDef):
             if self.current_block.statements:
 
-                func_block = self.new_block(typ)
+                func_block = self.new_block()
                 self.add_statement(func_block,node.name)
                 self.add_exit(self.current_block, func_block)
                 self.current_block = func_block
@@ -641,7 +614,7 @@ class CFGBuilder():
 
         elif isinstance(node, ast.Return):
             if self.current_block.statements:
-                return_block = self.new_block(typ)
+                return_block = self.new_block()
                 self.current_block.add_exit(return_block)
                 self.current_block = return_block
 
@@ -744,7 +717,7 @@ class CFGBuilder():
             #if the parent is a cfg node, a new node is created
             if self.current_block.type in stmnt_types:
                 current_block = self.current_block
-                new_block = self.new_block(typ)
+                new_block = self.new_block()
                 self.add_exit(current_block, new_block)
                 self.current_block =new_block
             
