@@ -341,7 +341,9 @@ class CFGBuilder():
             for child in node.body:
                 self.traverse(child)
 
-        #elif isinstance(node, ast.ClassDef):
+        elif isinstance(node, ast.ClassDef):
+            self.add_statement(self.current_block, node)
+            self.new_classCFG(node, asynchr=False)
             # if self.current_block.statements:
 
             #     class_block = self.new_block()
@@ -733,6 +735,9 @@ def main(path, name):
     tree = ast.parse(read_file_to_string(path), path)
     cfgb = CFGBuilder()
     cfg = cfgb.build(tree, name)
+
+    # generate json
+    cfg.sub
     
     return cfgb.show_blocks(cfg.entryblock, set(),mylist=[])
     
