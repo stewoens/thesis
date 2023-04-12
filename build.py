@@ -341,32 +341,23 @@ class CFGBuilder():
             for child in node.body:
                 self.traverse(child)
 
-        elif isinstance(node, ast.ClassDef):
+        elif isinstance(node, ast.ClassDef): #check
             self.add_statement(self.current_block, node)
             self.new_classCFG(node, asynchr=False)
-            # if self.current_block.statements:
 
-            #     class_block = self.new_block()
-            #     self.add_statement(class_block,node.name)
-            #     self.add_exit(self.current_block, class_block)
-            #     self.current_block = class_block
-            # elif self.current_block.type == "ClassDef":
-            #     self.add_statement(self.current_block, node.name)
-
-            # for child in node.body:
-            #     self.traverse(child) 
-
+        elif isinstance(node, ast.Expr): #check
+            self.add_statement(self.current_block, node)
+            #generic visit
+        
+        elif isinstance(node,ast.Assign): #check
+            self.add_statement(self.current_block, node)
+            #generic visit
+        
+        elif isinstance(node, ast.AugAssign): #check
+            self.add_statement(self.current_block, node)
+            #generic visit
+        
         elif isinstance(node, ast.Raise):
-            # if node.type:
-            #     print "type:"
-            #     print node.type
-            # if node.inst:
-            #     print "inst:"
-            #     print node.inst
-            # if node.tback:
-            #     print "tback:"
-            #     print node.tback
-
             if self.current_block.statements:
                 raise_block = self.new_block()
                 self.current_block.add_exit(raise_block)
@@ -471,7 +462,7 @@ class CFGBuilder():
                         self.traverse(child)
             self.current_block = self.new_block()
 
-        elif isinstance(node,ast.Assert):
+        elif isinstance(node,ast.Assert): #check
             self.add_statement(self.current_block, node)
             # New block for the case in which the assertion 'fails'.
             failblock = self.new_block()
@@ -483,8 +474,9 @@ class CFGBuilder():
             successblock = self.new_block()
             self.add_exit(self.current_block, successblock, node.test)
             self.current_block = successblock
+            #generic visit
 
-        elif isinstance(node, ast.If):
+        elif isinstance(node, ast.If): #check
             # If it already has something in it, we make a new block
             if self.current_block.statements:
                 # Add the If statement at the beginning of the new block.
@@ -495,7 +487,8 @@ class CFGBuilder():
             else:
                 # Add the If statement at the end of the current block.
                 self.add_statement(self.current_block, node.test)
-
+            if any(isinstance(node.test, T) for T in (ast.Compare, ast.Call)):
+                self.traverse(node.test)
             # Create a new block for the body of the if. (storing the True case)
             if_block = self.new_block()
 
@@ -525,15 +518,15 @@ class CFGBuilder():
             # Continue building the CFG in the after-if block.
             self.current_block = afterif_block
         
-        elif isinstance(node, ast.While):
+        elif isinstance(node, ast.While): #check
             # TODO while/else
 
             loop_guard = self.new_loopguard()
             self.current_block = loop_guard
-            #self.current_block.type =typ
-            self.add_statement(self.current_block,node.test)
+            self.add_statement(self.current_block)
 
-            
+            if isinstance(node.test, ast.Call):
+                self.traverse(node.test)
             # New block for the case where the test in the while is True.
             while_block = self.new_block()
             self.add_exit(self.current_block, while_block, node.test)
@@ -554,16 +547,15 @@ class CFGBuilder():
             # Continue building the CFG in the after-while block.
             self.current_block = afterwhile_block
 
-        elif isinstance(node,ast.For):
-        
+        elif isinstance(node,ast.For): #check
             # TODO for/else
 
             loop_guard = self.new_loopguard()
             self.current_block = loop_guard
-            #self.current_block.type =typ
-            self.add_statement(self.current_block, node.target)
-            self.add_statement(self.current_block,node.iter)
+            self.add_statement(self.current_block, node)
 
+            if isinstance(node.iter, ast.Call):
+                self.traverse(node.iter)
             # New block for the body of the for-loop.
             for_block = self.new_block()
             self.add_exit(self.current_block, for_block, node.iter)
@@ -589,14 +581,14 @@ class CFGBuilder():
             # Continue building the CFG in the after-for block.
             self.current_block = afterfor_block
 
-        elif isinstance(node, ast.Break):
+        elif isinstance(node, ast.Break): #check
             assert self.loop_stack
             after_block, _ = self.loop_stack[0]
             self.current_block.add_statement(node)
             self.current_block.add_exit(after_block)
             self.current_block = self.new_block()
         
-        elif isinstance(node,ast.Continue):
+        elif isinstance(node,ast.Continue): #check
             assert self.loop_stack
             
             _, loop_guard = self.loop_stack[0]
@@ -604,20 +596,15 @@ class CFGBuilder():
             self.add_exit(self.current_block, loop_guard)
             self.current_block = self.new_block()
         
-        elif isinstance(node,ast.FunctionDef):
+        elif isinstance(node, ast.Import): #check
+            self.add_statement(self.current_block, node)
+
+        elif isinstance(node, ast.ImportFrom): #check
+             self.add_statement(self.current_block, node)
+        
+        elif isinstance(node,ast.FunctionDef): #check
             self.add_statement(self.current_block, node)
             self.new_functionCFG(node, asynchr=False)
-        #     if self.current_block.statements:
-
-        #         func_block = self.new_block()
-        #         self.add_statement(func_block,node.name)
-        #         self.add_exit(self.current_block, func_block)
-        #         self.current_block = func_block
-        #     elif self.current_block.type == 'FunctionDef':
-        #         self.add_statement(self.current_block, node.name)
-
-        #     for child in node.body:
-        #         self.traverse(child) 
 
         elif isinstance(node, ast.Return):
             if self.current_block.statements:
