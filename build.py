@@ -606,7 +606,7 @@ class CFGBuilder():
             self.add_statement(self.current_block, node)
             self.new_functionCFG(node, asynchr=False)
 
-        elif isinstance(node, ast.Return):
+        elif isinstance(node, ast.Return): #check
             if self.current_block.statements:
                 return_block = self.new_block()
                 self.current_block.add_exit(return_block)
@@ -621,7 +621,6 @@ class CFGBuilder():
                     self.current_block.add_exit(after_return)
                     after_return.add_exit(self.current_block)
                     self.current_block = after_return
-
                     for child in stackobj.node.finalbody:
                         self.traverse(child)
 
@@ -629,6 +628,12 @@ class CFGBuilder():
             # Continue in a new block but without any jump to it -> all code after
             # the return statement will not be included in the CFG.
             self.current_block = self.new_block()
+
+        elif isinstance(node, ast.Yield): #check
+            self.cfg.asynchr = True
+            afteryield_block = self.new_block()
+            self.add_exit(self.current_block, afteryield_block)
+            self.current_block = afteryield_block
 
         elif  isinstance(node, ast.TryFinally):
             try_block = self.new_try_block(statement=node)
@@ -705,6 +710,11 @@ class CFGBuilder():
 
             del self.try_stack[0]
 
+        elif isinstance(node, ast.ExceptHandler): #check
+            assert self.try_stack
+            for child in node.body:
+                self.visit(child)
+            self.current_block.add_exit(self.try_stack[0].after_block)
 
         # ----------------GENERAL CASE--------------------#
         else:   
