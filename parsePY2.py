@@ -10,9 +10,8 @@ import ast
 
 data = r"C:/Users/ninas/OneDrive/Documents/UNI/Thesis/DATA/data2"
 test = r"C:/Users/ninas/OneDrive/Documents/UNI/Productive-Bachelors/test_file.py"
+test2 =r"C:/Users/ninas/OneDrive/Documents/UNI/Thesis/DATA/data2/adobe-type-tools/box-drawing"
 output_cfg ='OUTPUT/my_dataset_cfg'
-output_ast ='OUTPUT/my_dataset_ast'
-cfg_data = 'OUTPUT/my_cfg'
 
 
 def prep_path(path):
@@ -45,7 +44,7 @@ def data_parser_cfg():
         for root, _, files in os.walk(data):
             for file in files:
                 test
-                if i > 1:
+                if i > 50000:
                      print "finished :)"
                      return
                 path = prep_path(os.path.join(root, file))
@@ -61,7 +60,7 @@ def data_parser_cfg():
                 except Exception as e:
                     i+=1
                     errorlog.write(path + " " + str(e) + "\n")
-                    errorlog.write(traceback.format_exc() + "\n")
+                    #errorlog.write(traceback.format_exc() + "\n")
                     if  str(e) =="'Call' object has no attribute 'id'":
                         continue
     print "finished :)"

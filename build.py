@@ -231,7 +231,7 @@ class CFGBuilder():
         class_body = ast.Module(body=node.body)
         class_builder = CFGBuilder(self.isShort, self._treebuf)
         self.cfg.classcfgs[node.name]= classcfg = class_builder.build(
-            node.name, class_body, asynchr, self.current_id
+            tree=class_body,path= node.name, entry_id= self.current_id
         )
         classcfg.lineno = node.lineno
 #        classcfg.end_lineno = node.end_lineno  # type: ignore  #TODO something with ignore "'ClassDef' object has no attribute 'end_lineno'"
@@ -252,7 +252,7 @@ class CFGBuilder():
         # added to the function CFGs of the current CFG.
         func_body = ast.Module(body=node.body)
         func_builder = CFGBuilder(self.isShort, self._treebuf)
-        cfg = self.cfg.functioncfgs[node.name]= func_builder.build(node.name, func_body, asynchr, self.current_id)
+        cfg = self.cfg.functioncfgs[node.name]= func_builder.build(tree= func_body, path=node.name,entry_id= self.current_id)
         self.current_id = func_builder.current_id + 1
         cfg.lineno = node.lineno
         #cfg.end_lineno = node.end_lineno  # type: ignore   #TODO
@@ -396,7 +396,7 @@ class CFGBuilder():
                 raise ValueError("Subscript in Raise Statement")
             elif isinstance(node.type, ast.Attribute):
                 e_id = node.type.attr
-            elif isinstance(node.type, None):
+            elif node.type is None:
                 e_id =node.type
             else:
                 raise ValueError("Unexpected object {0}".format(node.type))
@@ -604,7 +604,9 @@ class CFGBuilder():
             self.add_exit(self.current_block, loop_guard)
             self.current_block = self.new_block()
         
-        # elif isinstance(node,ast.FunctionDef):
+        elif isinstance(node,ast.FunctionDef):
+            self.add_statement(self.current_block, node)
+            self.new_functionCFG(node, asynchr=False)
         #     if self.current_block.statements:
 
         #         func_block = self.new_block()
@@ -719,15 +721,12 @@ class CFGBuilder():
 
         # ----------------GENERAL CASE--------------------#
         else:   
-            print "this0"
             #if the parent is a cfg node, a new node is createds     
             if self.current_block.type() in stmnt_types:
-                print "this1"
                 current_block = self.current_block
                 new_block = self.new_block()
                 self.add_exit(current_block, new_block)
                 self.current_block =new_block
-            print "this2"
             self.add_statement(self.current_block,  node)
         
    
@@ -737,9 +736,23 @@ def main(path, name):
     cfg = cfgb.build(tree, name)
 
     # generate json
-    cfg.sub
+    uno = cfgb.show_blocks(cfg.entryblock, set(),mylist=[])
+    funccfgs= []
     
-    return cfgb.show_blocks(cfg.entryblock, set(),mylist=[])
+    for key in cfg.functioncfgs:
+        funccfgs.append(cfgb.show_blocks(cfg.functioncfgs[key].entryblock, set(),mylist=[]))
+
+    classcfgs = []
+    for key1 in cfg.classcfgs:
+        cd ={}
+        cd["class"] = cfgb.show_blocks(cfg.classcfgs[key1].entryblock, set(),mylist=[])
+        cd["functions"] =[]
+        for key2 in cfg.classcfgs[key1].functioncfgs:
+            cd["functions"].append(cfgb.show_blocks(cfg.classcfgs[key1].functioncfgs[key2].entryblock, set(),mylist=[]))
+        classcfgs.append(cd)
+
+    
+    return {'cfg': uno, 'classcfgs': classcfgs,'functioncfgs': funccfgs}
     
 
 

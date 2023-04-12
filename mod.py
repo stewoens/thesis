@@ -62,7 +62,6 @@ class Block(object):
         
 
     def type(self, default = None):
-        print "this3"
         if default is None:
             default = ast.AST
         if self.statements:
