@@ -713,7 +713,7 @@ class CFGBuilder():
         elif isinstance(node, ast.ExceptHandler): #check
             assert self.try_stack
             for child in node.body:
-                self.visit(child)
+                self.traverse(child)
             self.current_block.add_exit(self.try_stack[0].after_block)
 
         # ----------------GENERAL CASE--------------------#
