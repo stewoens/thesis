@@ -154,7 +154,7 @@ class FuncBlock(Block):
     __slots__ = ("args", "name")
 
     def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+        super(FuncBlock,self).__init__(*args, **kwargs)
         self.args = []
         self.name= None
 

@@ -6,7 +6,7 @@ from ast import NodeVisitor as n
 from itertools import count
 from collections import defaultdict, deque
 from typing import Dict, List, Optional, DefaultDict, Deque, Set, Union
-from mod import Link, TryBlock, Block, CFG
+from mod import Link, TryBlock, FuncBlock, Block, CFG
 import os
 import aenum
 
@@ -324,7 +324,7 @@ class CFGBuilder():
             tree (AST): the tree to be walked
         """
         
-        typ = node.__class__.__name__
+        #typ = node.__class__.__name__
     
         if isinstance(node, ast.Module):
             if self.current_block.statements:
@@ -349,7 +349,68 @@ class CFGBuilder():
         elif isinstance(node, ast.Expr): #check
             self.add_statement(self.current_block, node)
             self.generic_visit(node)
-        
+
+        elif isinstance(node, ast.Call):
+            def visit_func(node):
+                if isinstance(node, ast.Name):
+                    return node.id
+                elif isinstance(node, ast.Attribute):
+                    # Recursion on series of calls to attributes.
+                    func_name = visit_func(node.value)
+                    if func_name is not None:
+                        func_name = func_name + "." + node.attr
+                        return func_name
+                    else:
+                        return node.attr
+                        raise AttributeError(
+                            "Func_name is None", type(node)
+                        )
+
+                elif isinstance(node, ast.Subscript):
+                    if "id" in node.value._fields:
+                        return node.value.id
+                    elif "attr" in node.value._fields:
+                        return visit_func(node.value)
+                    else:
+                        raise AttributeError(
+                            "WTF is this thing, build it in??", type(node)
+                        )
+                elif isinstance(node, ast.Str):
+                    e_id = node.s
+                elif isinstance(node, ast.Call):
+                    if "id" in node.func._fields:
+                        return node.func.id
+                    elif "attr" in node.func._fields:
+                        return visit_func(node.func)
+                    else:
+                        raise AttributeError(
+                            "WTF is this thing, build it in??", type(node)
+                        )
+                else:
+                    print("WTF is this thing, build it in??", type(node))
+            func = node.func
+            func_name = visit_func(func)
+            if isinstance(node, ast.Call):
+                func_block = self.new_func_block()
+                self.add_statement(func_block, node)
+                func_block.name = func_name
+
+                if self._callbuf:
+                    # Func block is argument of last block in self._callbuf
+                    self._callbuf[-1].args.append(func_block)
+                else:
+                    # Not inside argument context.
+                    self.current_block.func_calls.append(func_name)
+                    self.current_block.func_blocks.append(func_block)
+
+                self._callbuf.append(func_block)
+                for arg in node.args:
+                    self.traverse(arg)
+                top = self._callbuf.pop()
+                assert hash(top) == hash(func_block)
+            else:
+                self.current_block.func_calls.append(func_name)
+
         elif isinstance(node,ast.Assign): #check
             self.add_statement(self.current_block, node)
             self.generic_visit(node)
@@ -360,7 +421,7 @@ class CFGBuilder():
         
         elif isinstance(node, ast.Raise):
             if self.current_block.statements:
-                raise_block = self.new_block()
+                raise_block = self.new_block(node)
                 self.current_block.add_exit(raise_block)
                 self.current_block = raise_block
             else:
@@ -369,30 +430,15 @@ class CFGBuilder():
             if not self.try_stack:
                 # Raise statement outside of try block
                 # If we don't know where control jumps, this is the last block
-                self.current_block = self.new_block()
+                self.current_block = self.new_block(node)
                 return
-            
-            if isinstance(node.type, ast.Call):
-                if isinstance(node.type.func, ast.Attribute):
-                    if isinstance(node.type.func.value, ast.Attribute):
-                        e_id = node.type.func.value.value.id
-                    else:
-                        e_id = node.type.func.value.id
-                else: e_id = node.type.func.id
-            elif isinstance(node.type, ast.Name):
-                e_id = node.type.id
-            elif isinstance(node.type, ast.Str):
-                e_id = node.type.s
-            elif isinstance(node.type, ast.Subscript):
-                e_id = node.type.value.id
-                raise ValueError("Subscript in Raise Statement")
-            elif isinstance(node.type, ast.Attribute):
-                e_id = node.type.attr
-            elif node.type is None:
-                e_id =node.type
+
+            if isinstance(node.exc, ast.Call):
+                e_id = node.exc.func.id
+            elif isinstance(node.exc, ast.Name):
+                e_id = node.exc.id
             else:
-                raise ValueError("Unexpected object {0}".format(node.type))
-            
+                raise ValueError("Unexpected object {0}".format(node.exc))
 
             for tryobj in list(self.try_stack):
 
@@ -443,7 +489,6 @@ class CFGBuilder():
                         self.current_block.add_exit(_after_block)
                         _after_block.add_exit(self.current_block)
                         self.current_block = _after_block
-
                         for child in tryobj.node.finalbody:
                             if isinstance(child, ast.Raise):
                                 break
@@ -456,7 +501,7 @@ class CFGBuilder():
                     self.current_block.add_exit(_after_block)
                     self.current_block = _after_block
 
-                    for child in tryobj.node.finalbody: #string4
+                    for child in tryobj.node.finalbody:
                         if isinstance(child, ast.Raise):
                             top = self.try_stack.popleft()
                             break
