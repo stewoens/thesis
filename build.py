@@ -2,6 +2,7 @@
 Control flow graph builder.
 """
 import ast
+from ast import NodeVisitor as n
 from itertools import count
 from collections import defaultdict, deque
 from typing import Dict, List, Optional, DefaultDict, Deque, Set, Union
@@ -347,15 +348,15 @@ class CFGBuilder():
 
         elif isinstance(node, ast.Expr): #check
             self.add_statement(self.current_block, node)
-            #generic visit
+            self.generic_visit(node)
         
         elif isinstance(node,ast.Assign): #check
             self.add_statement(self.current_block, node)
-            #generic visit
+            self.generic_visit(node)
         
         elif isinstance(node, ast.AugAssign): #check
             self.add_statement(self.current_block, node)
-            #generic visit
+            self.generic_visit(node)
         
         elif isinstance(node, ast.Raise):
             if self.current_block.statements:
@@ -474,7 +475,7 @@ class CFGBuilder():
             successblock = self.new_block()
             self.add_exit(self.current_block, successblock, node.test)
             self.current_block = successblock
-            #generic visit
+            self.generic_visit(node)
 
         elif isinstance(node, ast.If): #check
             # If it already has something in it, we make a new block
@@ -523,7 +524,7 @@ class CFGBuilder():
 
             loop_guard = self.new_loopguard()
             self.current_block = loop_guard
-            self.add_statement(self.current_block)
+            self.add_statement(self.current_block,node)
 
             if isinstance(node.test, ast.Call):
                 self.traverse(node.test)
@@ -717,15 +718,26 @@ class CFGBuilder():
             self.current_block.add_exit(self.try_stack[0].after_block)
 
         # ----------------GENERAL CASE--------------------#
-        else:   
-            #if the parent is a cfg node, a new node is createds     
-            if self.current_block.type() in stmnt_types:
-                current_block = self.current_block
-                new_block = self.new_block()
-                self.add_exit(current_block, new_block)
-                self.current_block =new_block
-            self.add_statement(self.current_block,  node)
-        
+        else:
+            self.generic_visit(node)
+            # #if the parent is a cfg node, a new node is createds     
+            # if self.current_block.type() in stmnt_types:
+            #     current_block = self.current_block
+            #     new_block = self.new_block()
+            #     self.add_exit(current_block, new_block)
+            #     self.current_block =new_block
+            # self.add_statement(self.current_block,  node)
+
+    def generic_visit(self, node):
+        """Called if no explicit visitor function exists for a node."""
+        for field, value in ast.iter_fields(node):
+            if isinstance(value, list):
+                for item in value:
+                    if isinstance(item, ast.AST):
+                        self.traverse(item)
+            elif isinstance(value, ast.AST):
+                self.traverse(value)
+
    
 def main(path, name):
     tree = ast.parse(read_file_to_string(path), path)
