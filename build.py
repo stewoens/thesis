@@ -717,7 +717,6 @@ class CFGBuilder():
 
             self.current_block.add_exit(after_tryblock)
             self.current_block = after_tryblock
-
             if node.finalbody:
                 stackobj.iter_state = TryEnum.FINAL
                 for child3 in node.finalbody:
@@ -731,6 +730,7 @@ class CFGBuilder():
                     next_block = self.new_block()
                     self.current_block.add_exit(next_block)
                     self.current_block = next_block
+            del self.try_stack[0]
 
         elif isinstance(node, ast.TryExcept):
             try_block = self.new_try_block(statement=node)
@@ -744,10 +744,7 @@ class CFGBuilder():
             for child1 in node.body:
                 self.traverse(child1)
 
-        
-            self.current_block.add_exit(after_tryblock)
-            self.current_block = after_tryblock
-                
+            stackobj.iter_state = TryEnum.EXCEPT
             for child in node.handlers:
                 self.current_block = self.new_block()
                 # If we encounter a raise statement during body iteration,
@@ -760,18 +757,13 @@ class CFGBuilder():
                     try_block.except_blocks[None] = self.current_block
                 self.traverse(child)
 
-            stackobj.iter_state = TryEnum.BODY
-            self.current_block = try_block
-            for child1 in node.body:
-                self.traverse(child1)
-
-            
-            stackobj.iter_state = TryEnum.ELSE
-            else_block = self.new_block()
-            self.current_block.add_exit(else_block)
-            self.current_block = else_block
-            for child2 in node.orelse:
-                self.traverse(child2)
+            if node.orelse:
+                stackobj.iter_state = TryEnum.ELSE
+                else_block = self.new_block()
+                self.current_block.add_exit(else_block)
+                self.current_block = else_block
+                for child2 in node.orelse:
+                    self.traverse(child2)
 
             self.current_block.add_exit(after_tryblock)
             self.current_block = after_tryblock
