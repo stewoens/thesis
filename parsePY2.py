@@ -44,7 +44,7 @@ def data_parser_cfg():
         for root, _, files in os.walk(data):
             for file in files:
                 test
-                if i > 50000:
+                if i > 10:
                      print "finished :)"
                      return
                 path = prep_path(os.path.join(root, file))
@@ -55,7 +55,7 @@ def data_parser_cfg():
                         # tree =ast.parse(read_file_to_string(path), path)
                         # print >>out, ast.dump(tree)
                         s = "done " + str(i)
-                        print s
+                        #print s
                         i = i+1
                 except Exception as e:
                     i+=1

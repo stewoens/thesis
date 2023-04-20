@@ -2,6 +2,7 @@
 Control flow graph builder.
 """
 import ast
+from parse_cfg_test import parse_node
 from ast import NodeVisitor as n
 from itertools import count
 from collections import defaultdict, deque
@@ -178,7 +179,8 @@ class CFGBuilder():
             statement: An AST node representing the statement that must be
                        added to the current block.
         """
-        block.statements.append(statement)
+        parsed_node = parse_node(statement)
+        block.statements.append(parsed_node)
 
     def add_exit(self,block,nextblock,exitcase = None): #Union[Compare, None, ast.BoolOp, ast.expr]
         """"
@@ -376,8 +378,6 @@ class CFGBuilder():
                     elif isinstance(node.value, ast.Subscript):
                         return visit_func(node.value)
                     else:
-                        print "one"
-                        print node.value
                         raise AttributeError(
                             "WTF is this thing, build it in??", type(node)
                         )
@@ -392,13 +392,11 @@ class CFGBuilder():
                         return visit_func(node.func)
                     
                     else:
-                        print "two"
-                        print node.func
                         raise AttributeError(
                             "WTF is this thing, build it in??", type(node)
                         )
                 else:
-                    print("WTF is this thing, build it in??", type(node))
+                    print("WTF is this thing", type(node))
             func = node.func
             func_name = visit_func(func)
             if isinstance(node, ast.Call):

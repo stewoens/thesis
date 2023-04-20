@@ -1,5 +1,6 @@
 
 import ast
+from parse_cfg_test import parse_node
 from typing import Any, Deque, Tuple, List, Optional, Iterator, Set, Dict
 
 class Block(object):
@@ -74,7 +75,9 @@ class Block(object):
         """
         Ive made node be dump(node)so far but maybe can be node as well?
         """
-        self.statements.append(node)
+        parsed_node = parse_node(node)
+        print parsed_node
+        self.statements.append(parsed_node)
     
     #not sure how the exits work yet
     def add_exit(self, next, exitcase=None):
