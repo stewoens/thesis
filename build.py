@@ -326,23 +326,23 @@ class CFGBuilder():
         
         #typ = node.__class__.__name__
     
-        if isinstance(node, ast.Module):
-            if self.current_block.statements:
-                mod_block = self.new_block()
-                self.add_statement(mod_block, path)
-                self.add_exit(self.current_block, mod_block)
-                self.current_block = mod_block
-            else:
-                self.add_statement(self.current_block, name)
+        # if isinstance(node, ast.Module):
+        #     if self.current_block.statements:
+        #         mod_block = self.new_block()
+        #         self.add_statement(mod_block, path)
+        #         self.add_exit(self.current_block, mod_block)
+        #         self.current_block = mod_block
+        #     else:
+        #         self.add_statement(self.current_block, name)
             
-            next_block = self.new_block()
-            self.add_exit(self.current_block, next_block)
-            self.current_block = next_block
+        #     next_block = self.new_block()
+        #     self.add_exit(self.current_block, next_block)
+        #     self.current_block = next_block
             
-            for child in node.body:
-                self.traverse(child)
+        #     for child in node.body:
+        #         self.traverse(child)
 
-        elif isinstance(node, ast.ClassDef): #check
+        if isinstance(node, ast.ClassDef): #check
             self.add_statement(self.current_block, node)
             self.new_classCFG(node, asynchr=False)
 
@@ -371,7 +371,13 @@ class CFGBuilder():
                         return node.value.id
                     elif "attr" in node.value._fields:
                         return visit_func(node.value)
+                    elif isinstance(node.value, ast.Call):
+                        return visit_func(node.value)
+                    elif isinstance(node.value, ast.Subscript):
+                        return visit_func(node.value)
                     else:
+                        print "one"
+                        print node.value
                         raise AttributeError(
                             "WTF is this thing, build it in??", type(node)
                         )
@@ -382,7 +388,12 @@ class CFGBuilder():
                         return node.func.id
                     elif "attr" in node.func._fields:
                         return visit_func(node.func)
+                    elif isinstance(node.func, ast.Call):
+                        return visit_func(node.func)
+                    
                     else:
+                        print "two"
+                        print node.func
                         raise AttributeError(
                             "WTF is this thing, build it in??", type(node)
                         )
@@ -433,12 +444,23 @@ class CFGBuilder():
                 self.current_block = self.new_block(node)
                 return
 
-            if isinstance(node.exc, ast.Call):
-                e_id = node.exc.func.id
-            elif isinstance(node.exc, ast.Name):
-                e_id = node.exc.id
+            if isinstance(node.type, ast.Call):
+                if isinstance(node.type.func, ast.Attribute):
+                    if isinstance(node.type.func.value, ast.Attribute):
+                        e_id = node.type.func.value.value.id
+                    else:
+                        e_id = node.type.func.value.id
+                else: e_id = node.type.func.id
+            elif isinstance(node.type, ast.Name):
+                e_id = node.type.id
+            elif isinstance(node.type, ast.Str):
+                e_id = node.type.s
+            elif isinstance(node.type, ast.Attribute):
+                e_id = node.type.attr
+            elif node.type is None:
+                e_id = node.type
             else:
-                raise ValueError("Unexpected object {0}".format(node.exc))
+                raise ValueError("Unexpected object {0}".format(node.type))
 
             for tryobj in list(self.try_stack):
 
