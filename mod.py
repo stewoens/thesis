@@ -76,7 +76,6 @@ class Block(object):
         Ive made node be dump(node)so far but maybe can be node as well?
         """
         parsed_node = parse_node(node)
-        print parsed_node
         self.statements.append(parsed_node)
     
     #not sure how the exits work yet
