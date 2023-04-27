@@ -13,9 +13,10 @@ import json
 data = r"C:/Users/ninas/OneDrive/Documents/UNI/Thesis/DATA/data2"
 test = r"C:/Users/ninas/OneDrive/Documents/UNI/Productive-Bachelors/test_file.py"
 test2 =r"C:/Users/ninas/OneDrive/Documents/UNI/Thesis/DATA/data2/adobe-type-tools/box-drawing"
-output_cfg ='OUTPUT/my_dataset_cfg'
+full_out ='OUTPUT/full_data'
+sample_out = 'OUTPUT/sample_data'
 
-size = 1000
+size = 150000
 
 def prep_path(path):
     x = '\\\\?\\' + path.replace('/','\\')
@@ -43,13 +44,13 @@ def test_output_ast():
 
 def data_parser_cfg():
     i =0
-    with open(output_cfg,'w') as out, open('OUTPUT/errorlog2.txt', 'w') as errorlog :
+    with open(full_out,'w') as out, open('OUTPUT/errorlog.txt', 'w') as errorlog :
         for root, _, files in os.walk(data):
             for file in files:
                 test
-                if i > size:
-                     print "finished :)"
-                     return
+                # if i > size:
+                #      print "finished :)"
+                #      return
                 path = prep_path(os.path.join(root, file))
                 try:
                     with open(path, 'r', )as f:
@@ -67,7 +68,7 @@ def data_parser_cfg():
                     #errorlog.write(traceback.format_exc() + "\n")
                     if  str(e) =="'Call' object has no attribute 'id'":
                         continue
-
+    print i
     print "finished :)"
     return
 
