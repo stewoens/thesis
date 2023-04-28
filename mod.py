@@ -85,17 +85,16 @@ class Block(object):
     def get_dict(block):   
         id = block.id
         text =block.statements
-        type = block.type()
+        typ = block.type()
         children =[]
         for i in block.exits:
             children.append(i.target.id)
         
         
-        #text removed for orga
-        if type in ['If', 'True_Case','False_case','While','For'] or True:
-            dict = {"id": id,"text":text, "children": children, "type": type}
-        else:
-            dict = {"id": id, "children": children, "type": type}
+        # if type in ['If', 'True_Case','False_case','While','For'] or True:
+        #     dict = {"id": id,"text":text, "children": children, "type": type}
+        # else:
+        dict = {"id": id,"statements": text, "children": children, "type": typ}
         return dict
 
 
