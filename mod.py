@@ -68,6 +68,7 @@ class Block(object):
         if self.statements:
             if isinstance(self.statements[0],basestring):
                 return 'Module'
+            print self.statements[0]
             return self.statements[0].__class__.__name__
         return default.__class__.__name__
 
@@ -87,17 +88,17 @@ class Block(object):
     def get_dict(block):   
         id = block.id
         text =block.statements
-        type = block.type()
+        typ = block.type()
         children =[]
         for i in block.exits:
             children.append(i.target.id)
         
         
         #text removed for orga
-        if type in ['If', 'True_Case','False_case','While','For'] or True:
-            dict = {"id": id,"text":text, "children": children, "type": type}
-        else:
-            dict = {"id": id, "children": children, "type": type}
+        # if type in ['If', 'True_Case','False_case','While','For'] or True:
+        #     dict = {"id": id,"text":text, "children": children, "type": type}
+        # else:
+        dict = {"id": id,"statements": text, "children": children, "type1": typ}
         return dict
 
 
