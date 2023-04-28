@@ -13,10 +13,10 @@ import json
 data = r"C:/Users/ninas/OneDrive/Documents/UNI/Thesis/DATA/data2"
 test = r"C:/Users/ninas/OneDrive/Documents/UNI/Productive-Bachelors/test_file.py"
 test2 =r"C:/Users/ninas/OneDrive/Documents/UNI/Thesis/DATA/data2/adobe-type-tools/box-drawing"
-full_out ='OUTPUT/full_data'
-sample_out = 'OUTPUT/sample_data'
+full_out ='OUTPUT/full_data.json'
+sample_out = 'OUTPUT/sample_data.json'
 
-size = 150000
+size = 0
 
 def prep_path(path):
     x = '\\\\?\\' + path.replace('/','\\')
@@ -44,13 +44,13 @@ def test_output_ast():
 
 def data_parser_cfg():
     i =0
-    with open(full_out,'w') as out, open('OUTPUT/errorlog.txt', 'w') as errorlog :
+    with open(sample_out,'w') as out, open('OUTPUT/errorlog.txt', 'w') as errorlog :
         for root, _, files in os.walk(data):
             for file in files:
                 test
-                # if i > size:
-                #      print "finished :)"
-                #      return
+                if i > size:
+                     print "finished :)"
+                     return
                 path = prep_path(os.path.join(root, file))
                 try:
                     with open(path, 'r', )as f:
