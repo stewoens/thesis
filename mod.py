@@ -160,8 +160,8 @@ class FuncBlock(Block):
 class TryBlock(Block):
     __slots__ = ("except_blocks",)
 
-    def __init__(self, id):
-        super(TryBlock,self).__init__(id)
+    def __init__(self, *args, **kwargs):
+        super(TryBlock,self).__init__(*args, **kwargs)
         self.except_blocks = {}
 
     def get_source(self):
