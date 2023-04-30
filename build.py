@@ -376,7 +376,6 @@ class CFGBuilder():
                     elif isinstance(node.value, ast.Subscript):
                         return visit_func(node.value)
                     else:
-                        print "one"
                         print node.value
                         raise AttributeError(
                             "WTF is this thing, build it in??", type(node)
@@ -392,7 +391,6 @@ class CFGBuilder():
                         return visit_func(node.func)
                     
                     else:
-                        print "two"
                         print node.func
                         raise AttributeError(
                             "WTF is this thing, build it in??", type(node)
