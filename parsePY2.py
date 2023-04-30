@@ -53,7 +53,7 @@ def data_parser_cfg():
                 try:
                     with open(path, 'r', )as f:
                         cfg_data = main(path,name=file)
-                        #print cfg_data
+
                         print >>out, json.dumps(cfg_data)
                         # tree =ast.parse(read_file_to_string(path), path)
                         # print >>out, ast.dump(tree)

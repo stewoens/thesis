@@ -1,5 +1,6 @@
 
 import ast
+from parse_cfg_test import parse_node
 from typing import Any, Deque, Tuple, List, Optional, Iterator, Set, Dict
 
 class Block(object):
@@ -67,6 +68,7 @@ class Block(object):
         if self.statements:
             if isinstance(self.statements[0],basestring):
                 return 'Module'
+            print self.statements[0]
             return self.statements[0].__class__.__name__
         return default.__class__.__name__
 
@@ -74,7 +76,8 @@ class Block(object):
         """
         Ive made node be dump(node)so far but maybe can be node as well?
         """
-        self.statements.append(node)
+        parsed_node = parse_node(node)
+        self.statements.append(parsed_node)
     
     #not sure how the exits work yet
     def add_exit(self, next, exitcase=None):
@@ -95,6 +98,7 @@ class Block(object):
         #     dict = {"id": id,"text":text, "children": children, "type": type}
         # else:
         dict = {"id": id,"statements": text, "children": children, "type": typ}
+
         return dict
 
 
