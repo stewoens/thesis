@@ -94,11 +94,11 @@ class Block(object):
             children.append(i.target.id)
         
         
-        #text removed for orga
         # if type in ['If', 'True_Case','False_case','While','For'] or True:
         #     dict = {"id": id,"text":text, "children": children, "type": type}
         # else:
-        dict = {"id": id,"statements": text, "children": children, "type1": typ}
+        dict = {"id": id,"statements": text, "children": children, "type": typ}
+
         return dict
 
 
@@ -164,8 +164,8 @@ class FuncBlock(Block):
 class TryBlock(Block):
     __slots__ = ("except_blocks",)
 
-    def __init__(self, id):
-        super(TryBlock,self).__init__(id)
+    def __init__(self, *args, **kwargs):
+        super(TryBlock,self).__init__(*args, **kwargs)
         self.except_blocks = {}
 
     def get_source(self):
