@@ -1,18 +1,21 @@
 from parse_python import parse_file, read_file_to_string
 #from parse_cfg import parse_file_2cfg
 from build import main
+from cptm.utils import file_tqdm
 import os
 import traceback
 import sys
 import ast
+import json
 
 # ---------- parse pyhon2 files to cfg with parse_cfg.py ---------- #
 
 data = r"C:/Users/ninas/OneDrive/Documents/UNI/Thesis/DATA/data2"
 test = r"C:/Users/ninas/OneDrive/Documents/UNI/Productive-Bachelors/test_file.py"
-test2 =r"C:/Users/ninas/OneDrive/Documents/UNI/Thesis/DATA/data2/adobe-type-tools/box-drawing"
-output_cfg ='OUTPUT/my_dataset_cfg'
+full_out ='OUTPUT/full_data.json'
+sample_out = 'OUTPUT/sample_data.json'
 
+size = 0
 
 def prep_path(path):
     x = '\\\\?\\' + path.replace('/','\\')
@@ -39,36 +42,32 @@ def test_output_ast():
         print "finished :)"
 
 def data_parser_cfg():
-    i =0
-    with open(output_cfg,'w') as out, open('OUTPUT/errorlog2.txt', 'w') as errorlog :
+    i = 0
+    with open(sample_out,'w') as out, open('OUTPUT/errorlog.txt', 'w') as errorlog :
         for root, _, files in os.walk(data):
             for file in files:
-                test
-                if i > 50000:
+                if i > size:
                      print "finished :)"
                      return
                 path = prep_path(os.path.join(root, file))
                 try:
                     with open(path, 'r', )as f:
-
-                        print >>out, main(path,name=file)
+                        cfg_data = main(path,name=file)
+                        #print cfg_data
+                        print >>out, json.dumps(cfg_data)
                         # tree =ast.parse(read_file_to_string(path), path)
                         # print >>out, ast.dump(tree)
-                        s = "done " + str(i)
-                        print s
+                        if (float(i)*100 /size) % 5 == 0:
+                            print str(i*100 /size) + " percent"
                         i = i+1
                 except Exception as e:
                     i+=1
                     errorlog.write(path + " " + str(e) + "\n")
-                    #errorlog.write(traceback.format_exc() + "\n")
+                    errorlog.write(traceback.format_exc() + "\n")
                     if  str(e) =="'Call' object has no attribute 'id'":
                         continue
+    print i
     print "finished :)"
     return
 
 data_parser_cfg()
-
-
-
-
-    
