@@ -179,8 +179,8 @@ class CFGBuilder():
             statement: An AST node representing the statement that must be
                        added to the current block.
         """
-        parsed_node = parse_node(statement)
-        block.statements.append(parsed_node)
+        print statement
+        block.statements.append(statement)
 
     def add_exit(self,block,nextblock,exitcase = None): #Union[Compare, None, ast.BoolOp, ast.expr]
         """"

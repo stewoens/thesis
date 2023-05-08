@@ -68,16 +68,16 @@ class Block(object):
         if self.statements:
             if isinstance(self.statements[0],basestring):
                 return 'Module'
-            print self.statements[0]
-            return self.statements[0].__class__.__name__
+            print self.statements[0][0]['type']
+            return self.statements[0][0]['type']
         return default.__class__.__name__
 
     def add_statement(self, node):
         """
         Ive made node be dump(node)so far but maybe can be node as well?
         """
-        parsed_node = parse_node(node)
-        self.statements.append(parsed_node)
+        print node
+        self.statements.append(node)
     
     #not sure how the exits work yet
     def add_exit(self, next, exitcase=None):
@@ -87,8 +87,9 @@ class Block(object):
         
     def get_dict(block):   
         id = block.id
+        print block.id
         text =block.statements
-        typ = block.type()
+        #typ = block.type()
         children =[]
         for i in block.exits:
             children.append(i.target.id)
@@ -97,7 +98,7 @@ class Block(object):
         # if type in ['If', 'True_Case','False_case','While','For'] or True:
         #     dict = {"id": id,"text":text, "children": children, "type": type}
         # else:
-        dict = {"id": id,"statements": text, "children": children, "type": typ}
+        dict = {"id": id,"statements": text, "children": children } #"type": typ
 
         return dict
 
