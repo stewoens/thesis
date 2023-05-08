@@ -15,7 +15,7 @@ test = r"C:/Users/ninas/OneDrive/Documents/UNI/Productive-Bachelors/test_file.py
 full_out ='OUTPUT/full_data.json'
 sample_out = 'OUTPUT/sample_data.json'
 
-size = 0
+size = 1
 
 def prep_path(path):
     x = '\\\\?\\' + path.replace('/','\\')
@@ -46,7 +46,7 @@ def data_parser_cfg():
     with open(sample_out,'w') as out, open('OUTPUT/errorlog.txt', 'w') as errorlog :
         for root, _, files in os.walk(data):
             for file in files:
-                if i > size:
+                if i >= size:
                      print "finished :)"
                      return
                 path = prep_path(os.path.join(root, file))
@@ -54,12 +54,13 @@ def data_parser_cfg():
                     with open(path, 'r', )as f:
                         cfg_data = main(path,name=file)
 
-                        print >>out, json.dumps(cfg_data)
+                        print >>out, cfg_data
                         # tree =ast.parse(read_file_to_string(path), path)
                         # print >>out, ast.dump(tree)
+                        i = i+1
                         if (float(i)*100 /size) % 5 == 0:
                             print str(i*100 /size) + " percent"
-                        i = i+1
+                        
                 except Exception as e:
                     i+=1
                     errorlog.write(path + " " + str(e) + "\n")
