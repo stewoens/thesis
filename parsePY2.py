@@ -15,7 +15,7 @@ test = r"C:/Users/ninas/OneDrive/Documents/UNI/Productive-Bachelors/test_file.py
 full_out ='OUTPUT/full_data.json'
 sample_out = 'OUTPUT/sample_data.json'
 
-size = 1
+size = 50
 
 def prep_path(path):
     x = '\\\\?\\' + path.replace('/','\\')
@@ -26,27 +26,17 @@ def test_path_prep():
     for root, _, files in os.walk(data):
         for file in files:
             if i < 10:
-                print prep_path(os.path.join(root, file))
+                prep_path(os.path.join(root, file)) 
                 i =i+1
             else: return
 
- 
-def test_output_cfg():           
-    with open(output_cfg,'w') as out, open(path, 'r')as f:
-        print >>out, parse_file_2cfg(test)
-        print "finished :)"
-        
-def test_output_ast():           
-    with open(output_ast,'w') as out, open(test, 'r')as f:
-        print >>out, parse_file(test)
-        print "finished :)"
 
 def data_parser_cfg():
     i = 0
     with open(sample_out,'w') as out, open('OUTPUT/errorlog.txt', 'w') as errorlog :
         for root, _, files in os.walk(data):
             for file in files:
-                if i >= size:
+                if i > size:
                      print "finished :)"
                      return
                 path = prep_path(os.path.join(root, file))
@@ -55,8 +45,6 @@ def data_parser_cfg():
                         cfg_data = main(path,name=file)
 
                         print >>out, cfg_data
-                        # tree =ast.parse(read_file_to_string(path), path)
-                        # print >>out, ast.dump(tree)
                         i = i+1
                         if (float(i)*100 /size) % 5 == 0:
                             print str(i*100 /size) + " percent"
@@ -67,8 +55,6 @@ def data_parser_cfg():
                     errorlog.write(traceback.format_exc() + "\n")
                     if  str(e) =="'Call' object has no attribute 'id'":
                         continue
-    print i
-    print "finished :)"
     return
 
 data_parser_cfg()
