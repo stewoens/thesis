@@ -1,6 +1,7 @@
 
 import ast
 from parse_cfg_test import parse_node
+from astprint import as_tree, as_code
 from typing import Any, Deque, Tuple, List, Optional, Iterator, Set, Dict
 
 class Block(object):
@@ -76,8 +77,7 @@ class Block(object):
         """
         Ive made node be dump(node)so far but maybe can be node as well?
         """
-        print node
-        self.statements.append(node)
+        self.statements.append(as_code(node))
     
     #not sure how the exits work yet
     def add_exit(self, next, exitcase=None):
@@ -87,7 +87,6 @@ class Block(object):
         
     def get_dict(block):   
         id = block.id
-        print block.id
         text =block.statements
         #typ = block.type()
         children =[]

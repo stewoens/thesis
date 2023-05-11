@@ -10,6 +10,7 @@ from typing import Dict, List, Optional, DefaultDict, Deque, Set, Union
 from mod import Link, TryBlock, FuncBlock, Block, CFG
 import os
 import aenum
+from astprint import as_tree, as_code
 
 test = r"C:/Users/ninas/OneDrive/Documents/UNI/Productive-Bachelors/example.py"
 stmnt_types = ['Module' , 'If', 'For', 'While', 'Break', 'Continue', 'ExceptHandler', 'With','ClassDef','FunctionDef','TryExcept','TryFinally']
@@ -179,8 +180,7 @@ class CFGBuilder():
             statement: An AST node representing the statement that must be
                        added to the current block.
         """
-        print statement
-        block.statements.append(statement)
+        block.statements.append(as_code(statement))
 
     def add_exit(self,block,nextblock,exitcase = None): #Union[Compare, None, ast.BoolOp, ast.expr]
         """"
@@ -801,25 +801,38 @@ def main(path, name):
     cfgb = CFGBuilder()
     cfg = cfgb.build(tree, name)
 
-    # generate json
+    cfgs =[]
+    # # generate json
+    # uno = cfgb.show_blocks(cfg.entryblock, set(),mylist=[])
+    # funccfgs= []
+    
+    # for key in cfg.functioncfgs:
+    #     funccfgs.append(cfgb.show_blocks(cfg.functioncfgs[key].entryblock, set(),mylist=[]))
+
+    # classcfgs = []
+    # for key1 in cfg.classcfgs:
+    #     cd ={}
+    #     cd["class"] = cfgb.show_blocks(cfg.classcfgs[key1].entryblock, set(),mylist=[])
+    #     cd["functions"] =[]
+    #     for key2 in cfg.classcfgs[key1].functioncfgs:
+    #         cd["functions"].append(cfgb.show_blocks(cfg.classcfgs[key1].functioncfgs[key2].entryblock, set(),mylist=[]))
+    #     classcfgs.append(cd)
+
+    # return {'cfg': uno, 'classcfgs': classcfgs,'functioncfgs': funccfgs}
+
     uno = cfgb.show_blocks(cfg.entryblock, set(),mylist=[])
-    funccfgs= []
-    
+    cfgs.append(uno)
+
     for key in cfg.functioncfgs:
-        funccfgs.append(cfgb.show_blocks(cfg.functioncfgs[key].entryblock, set(),mylist=[]))
+        cfgs.append(cfgb.show_blocks(cfg.functioncfgs[key].entryblock, set(),mylist=[]))
 
-    classcfgs = []
     for key1 in cfg.classcfgs:
-        cd ={}
-        cd["class"] = cfgb.show_blocks(cfg.classcfgs[key1].entryblock, set(),mylist=[])
-        cd["functions"] =[]
-        for key2 in cfg.classcfgs[key1].functioncfgs:
-            cd["functions"].append(cfgb.show_blocks(cfg.classcfgs[key1].functioncfgs[key2].entryblock, set(),mylist=[]))
-        classcfgs.append(cd)
+        cfgs.append(cfgb.show_blocks(cfg.classcfgs[key1].entryblock, set(),mylist=[]))
 
-    
-    return {'cfg': uno, 'classcfgs': classcfgs,'functioncfgs': funccfgs}
-    
+        for key2 in cfg.classcfgs[key1].functioncfgs:
+            cfgs.append(cfgb.show_blocks(cfg.classcfgs[key1].functioncfgs[key2].entryblock, set(),mylist=[]))
+
+    return cfgs
 
 
 #main('\\\\?\\C:\\Users\\ninas\\OneDrive\\Documents\\UNI\\Productive-Bachelors\\DATA\\data2\\00\\wikihouse\\asset.py')
