@@ -44,7 +44,7 @@ def data_parser_cfg():
                     with open(path, 'r', )as f:
                         cfg_data = main(path,name=file)
 
-                        print >>out, cfg_data
+                        print >>out, json.dumps(cfg_data)
                         i = i+1
                         if (float(i)*100 /size) % 5 == 0:
                             print str(i*100 /size) + " percent"

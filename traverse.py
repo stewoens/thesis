@@ -13,11 +13,12 @@ def traverse():
         for line in file_tqdm(f):
             # dp = json.loads(line.strip())
             # asts = separate_dps(dp, 1000)
-            dp = ast.literal_eval(line)
+            dp = json.loads(line)
             for cfg in dp:
                 #each cfg will generate a different sequence
                 for block in cfg:
                     for s in block['statements']:
-                        
+                        print(s)
+                        break
 
 traverse()
