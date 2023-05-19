@@ -13,7 +13,6 @@ import aenum
 from astprint import as_tree, as_code
 
 test = r"C:/Users/ninas/OneDrive/Documents/UNI/Productive-Bachelors/example.py"
-stmnt_types = ['Module' , 'If', 'For', 'While', 'Break', 'Continue', 'ExceptHandler', 'With','ClassDef','FunctionDef','TryExcept','TryFinally']
 
 def invert(node): #: Union[Compare, ast.expr]
     """
@@ -141,13 +140,14 @@ class CFGBuilder():
     
 
     # ---------- Graph management methods ---------- #
-    def new_block(self, statement=None):
+    def new_block(self, statement = None):
         """
         Create a new block with a new id.
 
         Returns:
             A Block object with a new unique id.
         """
+
         self.current_id += 1
         block = Block(self.current_id)
         if statement is not None:
@@ -171,7 +171,7 @@ class CFGBuilder():
             block.add_statement(statement)
         return block
 
-    def add_statement(self, block, statement):
+    def add_statement(self, block, node):
         """
         Add a statement to a block.
 
@@ -180,7 +180,17 @@ class CFGBuilder():
             statement: An AST node representing the statement that must be
                        added to the current block.
         """
-        block.statements.append(as_code(statement))
+        s = as_code(node)
+
+        if isinstance(node, ast.While):
+            s = "while " + as_code(node.test) +":"
+        elif isinstance(node, ast.Module):
+            s = "Module"
+        elif isinstance(node, ast.If):
+            s = "if " + as_code(node.test) +":" 
+        elif isinstance(node, ast.For):
+            s = as_code(node).partition('\n')[0]
+        block.statements.append(s)
 
     def add_exit(self,block,nextblock,exitcase = None): #Union[Compare, None, ast.BoolOp, ast.expr]
         """"
@@ -308,8 +318,11 @@ class CFGBuilder():
         if block in visited:
             return mylist
         visited.add(block)
-         
+        if isinstance(block, TryBlock):
+            print "2"
         dict = block.get_dict()
+        if isinstance(block, TryBlock):
+            print "1"
         mylist.append(dict)
         modifiedlist = mylist
         for exit in block.exits:
@@ -326,25 +339,25 @@ class CFGBuilder():
             tree (AST): the tree to be walked
         """
         
-        #typ = node.__class__.__name__
+        #print node.__class__.__name__
+        
     
-        # if isinstance(node, ast.Module):
-        #     if self.current_block.statements:
-        #         mod_block = self.new_block()
-        #         self.add_statement(mod_block, path)
-        #         self.add_exit(self.current_block, mod_block)
-        #         self.current_block = mod_block
-        #     else:
-        #         self.add_statement(self.current_block, name)
+        if isinstance(node, ast.Module):
+            # if self.current_block.statements:
+            #     mod_block = self.new_block()
+            #     self.add_exit(self.current_block, mod_block)
+            #     self.current_block = mod_block
+            # else:
+            #     self.add_statement(self.current_block, name)
             
-        #     next_block = self.new_block()
-        #     self.add_exit(self.current_block, next_block)
-        #     self.current_block = next_block
-            
-        #     for child in node.body:
-        #         self.traverse(child)
+            # next_block = self.new_block()
+            # self.add_exit(self.current_block, next_block)
+            # self.current_block = next_block
+            self.add_statement(self.current_block, node)
+            for child in node.body:
+                self.traverse(child)
 
-        if isinstance(node, ast.ClassDef): #check
+        elif isinstance(node, ast.ClassDef): #check
             self.add_statement(self.current_block, node)
             self.new_classCFG(node, asynchr=False)
 
@@ -428,6 +441,9 @@ class CFGBuilder():
             self.add_statement(self.current_block, node)
             self.generic_visit(node)
         
+        elif isinstance(node, ast.Print): #check
+             self.add_statement(self.current_block, node)
+        
         elif isinstance(node, ast.Raise):
             if self.current_block.statements:
                 raise_block = self.new_block(node)
@@ -441,7 +457,6 @@ class CFGBuilder():
                 # If we don't know where control jumps, this is the last block
                 self.current_block = self.new_block(node)
                 return
-
             if isinstance(node.type, ast.Call):
                 if isinstance(node.type.func, ast.Attribute):
                     if isinstance(node.type.func.value, ast.Attribute):
@@ -463,6 +478,9 @@ class CFGBuilder():
             for tryobj in list(self.try_stack):
 
                 def contains(item, state):
+                    if not item in tryobj.try_block.except_blocks:
+                        print tryobj.try_block.except_blocks
+                    print tryobj.iter_state == state
                     return (
                         item in tryobj.try_block.except_blocks
                         and tryobj.iter_state == state
@@ -547,12 +565,12 @@ class CFGBuilder():
             if self.current_block.statements:
                 # Add the If statement at the beginning of the new block.
                 cond_block = self.new_block()
-                self.add_statement(cond_block, node.test)
+                self.add_statement(cond_block, node)  #not node.test anymore
                 self.add_exit(self.current_block, cond_block)
                 self.current_block = cond_block
             else:
                 # Add the If statement at the end of the current block.
-                self.add_statement(self.current_block, node.test)
+                self.add_statement(self.current_block, node) #not node.test anymore
             if any(isinstance(node.test, T) for T in (ast.Compare, ast.Call)):
                 self.traverse(node.test)
             # Create a new block for the body of the if. (storing the True case)
@@ -565,6 +583,7 @@ class CFGBuilder():
 
             # New block for the body of the else if there is an else clause.
             if node.orelse:
+    
                 else_block = self.new_block() #TODO false case
                 self.add_exit(self.current_block, else_block, invert(node.test))
                 self.current_block = else_block
@@ -574,6 +593,7 @@ class CFGBuilder():
                 self.add_exit(self.current_block, afterif_block)
             else:
                 self.add_exit(self.current_block, afterif_block, invert(node.test))
+
 
             # Visit children to populate the if block.
             self.current_block = if_block
@@ -595,6 +615,7 @@ class CFGBuilder():
                 self.traverse(node.test)
             # New block for the case where the test in the while is True.
             while_block = self.new_block()
+
             self.add_exit(self.current_block, while_block, node.test)
 
             # New block for the case where the test in the while is False.
@@ -668,9 +689,11 @@ class CFGBuilder():
         elif isinstance(node, ast.ImportFrom): #check
              self.add_statement(self.current_block, node)
         
+        
         elif isinstance(node,ast.FunctionDef): #check
             self.add_statement(self.current_block, node)
             self.new_functionCFG(node, asynchr=False)
+        
 
         elif isinstance(node, ast.Return): #check
             if self.current_block.statements:
@@ -732,19 +755,21 @@ class CFGBuilder():
 
         elif isinstance(node, ast.TryExcept):
             try_block = self.new_try_block(statement=node)
+
+            if self.current_block.is_empty():
+                self.current_block = try_block
+            else:
+                self.current_block.add_exit(try_block)
+            
+
             after_tryblock = self.new_block()
-            self.current_block.add_exit(try_block)
             stackobj = TryStackObject(try_block, after_tryblock, False)
             self.try_stack.appendleft(stackobj)
 
-            stackobj.iter_state = TryEnum.BODY
-            self.current_block = try_block
-            for child1 in node.body:
-                self.traverse(child1)
-
             stackobj.iter_state = TryEnum.EXCEPT
             for child in node.handlers:
-                self.current_block = self.new_block()
+                print self.current_block.statements
+                self.current_block = self.new_block(statement=child)
                 # If we encounter a raise statement during body iteration,
                 # we can link the raise block to the appropriate exception block (if any).
                 try:
@@ -753,8 +778,19 @@ class CFGBuilder():
                     ] = self.current_block
                 except:
                     try_block.except_blocks[None] = self.current_block
+                print self.current_block.statements
                 self.traverse(child)
 
+
+            stackobj.iter_state = TryEnum.BODY
+            self.current_block = try_block
+            print self.current_block.statements
+            for child1 in node.body:
+                print child1.__class__.__name__
+                self.traverse(child1)
+
+
+            
             if node.orelse:
                 stackobj.iter_state = TryEnum.ELSE
                 else_block = self.new_block()
@@ -766,10 +802,13 @@ class CFGBuilder():
             self.current_block.add_exit(after_tryblock)
             self.current_block = after_tryblock
 
-            del self.try_stack[0]
+            del self.try_stack[0]    
 
         elif isinstance(node, ast.ExceptHandler): #check
             assert self.try_stack
+            ExceptBlock= self.new_block(node)
+            # print self.current_block.statements
+            #self.add_exit(self.current_block, ExceptBlock)
             for child in node.body:
                 self.traverse(child)
             self.current_block.add_exit(self.try_stack[0].after_block)

@@ -69,7 +69,6 @@ class Block(object):
         if self.statements:
             if isinstance(self.statements[0],basestring):
                 return 'Module'
-            print self.statements[0][0]['type']
             return self.statements[0][0]['type']
         return default.__class__.__name__
 
@@ -77,7 +76,19 @@ class Block(object):
         """
         Ive made node be dump(node)so far but maybe can be node as well?
         """
-        self.statements.append(as_code(node))
+        s = as_code(node)
+        if isinstance(node, ast.While):
+            s = "while " + as_code(node.test) +":"
+        elif isinstance(node, ast.If):
+            s = "if " + as_code(node.test) +":" 
+        elif isinstance(node, ast.For):
+            s = as_code(node).partition('\n')[0]
+        elif isinstance(node, ast.TryExcept):
+            s = as_code(node).partition("\n")[0]
+        elif isinstance(node, ast.ExceptHandler):
+            s =as_code(node).partition('\n')[0] #just except line 
+
+        self.statements.append(s)
     
     #not sure how the exits work yet
     def add_exit(self, next, exitcase=None):

@@ -11,9 +11,10 @@ import json
 # ---------- parse pyhon2 files to cfg with parse_cfg.py ---------- #
 
 data = r"C:/Users/ninas/OneDrive/Documents/UNI/Thesis/DATA/data2"
-test = r"C:/Users/ninas/OneDrive/Documents/UNI/Productive-Bachelors/test_file.py"
+test = r"C:/Users/ninas/OneDrive/Documents/UNI/Productive-Bachelors/examples"
 full_out ='OUTPUT/full_data.json'
 sample_out = 'OUTPUT/sample_data.json'
+example_out = 'OUTPUT/example.json'
 
 size = 50
 
@@ -33,8 +34,8 @@ def test_path_prep():
 
 def data_parser_cfg():
     i = 0
-    with open(sample_out,'w') as out, open('OUTPUT/errorlog.txt', 'w') as errorlog :
-        for root, _, files in os.walk(data):
+    with open(example_out,'w') as out, open('OUTPUT/errorlog.txt', 'w') as errorlog :
+        for root, _, files in os.walk(test):
             for file in files:
                 if i > size:
                      print "finished :)"
@@ -44,7 +45,7 @@ def data_parser_cfg():
                     with open(path, 'r', )as f:
                         cfg_data = main(path,name=file)
 
-                        print >>out, json.dumps(cfg_data)
+                        print >>out, json.dumps(cfg_data, indent =1)
                         i = i+1
                         if (float(i)*100 /size) % 5 == 0:
                             print str(i*100 /size) + " percent"
