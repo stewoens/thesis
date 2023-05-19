@@ -83,6 +83,8 @@ class Block(object):
             s = "if " + as_code(node.test) +":" 
         elif isinstance(node, ast.For):
             s = as_code(node).partition('\n')[0]
+        elif isinstance(node, ast.TryFinally):
+            s = as_code(node).partition("\n")[0]
         elif isinstance(node, ast.TryExcept):
             s = as_code(node).partition("\n")[0]
         elif isinstance(node, ast.ExceptHandler):

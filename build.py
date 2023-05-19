@@ -81,11 +81,13 @@ class TryEnum(aenum.IntEnum):
 
 
 class TryStackObject:
-    def __init__(self, try_block, after_block, has_final, iter_state = None,):
+    def __init__(self, try_block, after_block, has_final, ast, iter_state = None,):
         self.try_block = try_block
         self.after_block = after_block
         self.has_final = has_final
         self.iter_state = iter_state
+        self.ast = ast
+        print ast.__class__.__name__
 
     @property
     def node(self):
@@ -318,11 +320,7 @@ class CFGBuilder():
         if block in visited:
             return mylist
         visited.add(block)
-        if isinstance(block, TryBlock):
-            print "2"
         dict = block.get_dict()
-        if isinstance(block, TryBlock):
-            print "1"
         mylist.append(dict)
         modifiedlist = mylist
         for exit in block.exits:
@@ -478,9 +476,6 @@ class CFGBuilder():
             for tryobj in list(self.try_stack):
 
                 def contains(item, state):
-                    if not item in tryobj.try_block.except_blocks:
-                        print tryobj.try_block.except_blocks
-                    print tryobj.iter_state == state
                     return (
                         item in tryobj.try_block.except_blocks
                         and tryobj.iter_state == state
@@ -538,8 +533,8 @@ class CFGBuilder():
                     _after_block = self.new_block()
                     self.current_block.add_exit(_after_block)
                     self.current_block = _after_block
-
-                    for child in tryobj.node.finalbody:
+                    
+                    for child in tryobj.ast.finalbody:
                         if isinstance(child, ast.Raise):
                             top = self.try_stack.popleft()
                             break
@@ -725,10 +720,16 @@ class CFGBuilder():
             self.current_block = afteryield_block
 
         elif  isinstance(node, ast.TryFinally):
-            try_block = self.new_try_block(statement=node)
+            try_block = self.new_try_block(node)
+
+            if self.current_block.is_empty():
+                self.current_block = try_block
+            else:
+                self.current_block.add_exit(try_block)
+
             after_tryblock = self.new_block()
             self.current_block.add_exit(try_block)
-            stackobj = TryStackObject(try_block, after_tryblock, bool(node.finalbody))
+            stackobj = TryStackObject(try_block, after_tryblock, bool(node.finalbody),node)
             self.try_stack.appendleft(stackobj)
 
             stackobj.iter_state = TryEnum.BODY
@@ -763,12 +764,11 @@ class CFGBuilder():
             
 
             after_tryblock = self.new_block()
-            stackobj = TryStackObject(try_block, after_tryblock, False)
+            stackobj = TryStackObject(try_block, after_tryblock, False, node)
             self.try_stack.appendleft(stackobj)
 
             stackobj.iter_state = TryEnum.EXCEPT
             for child in node.handlers:
-                print self.current_block.statements
                 self.current_block = self.new_block(statement=child)
                 # If we encounter a raise statement during body iteration,
                 # we can link the raise block to the appropriate exception block (if any).
@@ -778,15 +778,12 @@ class CFGBuilder():
                     ] = self.current_block
                 except:
                     try_block.except_blocks[None] = self.current_block
-                print self.current_block.statements
                 self.traverse(child)
 
 
             stackobj.iter_state = TryEnum.BODY
             self.current_block = try_block
-            print self.current_block.statements
             for child1 in node.body:
-                print child1.__class__.__name__
                 self.traverse(child1)
 
 
@@ -807,7 +804,6 @@ class CFGBuilder():
         elif isinstance(node, ast.ExceptHandler): #check
             assert self.try_stack
             ExceptBlock= self.new_block(node)
-            # print self.current_block.statements
             #self.add_exit(self.current_block, ExceptBlock)
             for child in node.body:
                 self.traverse(child)
