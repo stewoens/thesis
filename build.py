@@ -87,7 +87,6 @@ class TryStackObject:
         self.has_final = has_final
         self.iter_state = iter_state
         self.ast = ast
-        print ast.__class__.__name__
 
     @property
     def node(self):
@@ -719,9 +718,14 @@ class CFGBuilder():
             self.add_exit(self.current_block, afteryield_block)
             self.current_block = afteryield_block
 
-        elif  isinstance(node, ast.TryFinally):
-            try_block = self.new_try_block(node)
 
+        elif  isinstance(node, ast.TryFinally):
+            for c in node.body:
+                if isinstance(c, ast.TryExcept):
+                    self.visit_ExceptFinally(node)
+                    return
+
+            try_block = self.new_try_block(node)
             if self.current_block.is_empty():
                 self.current_block = try_block
             else:
@@ -734,6 +738,7 @@ class CFGBuilder():
 
             stackobj.iter_state = TryEnum.BODY
             self.current_block = try_block
+
             for child1 in node.body:
                 self.traverse(child1)
 
@@ -779,8 +784,6 @@ class CFGBuilder():
                 except:
                     try_block.except_blocks[None] = self.current_block
                 self.traverse(child)
-
-
             stackobj.iter_state = TryEnum.BODY
             self.current_block = try_block
             for child1 in node.body:
@@ -798,8 +801,8 @@ class CFGBuilder():
 
             self.current_block.add_exit(after_tryblock)
             self.current_block = after_tryblock
-
-            del self.try_stack[0]    
+                    
+            del self.try_stack[0]
 
         elif isinstance(node, ast.ExceptHandler): #check
             assert self.try_stack
@@ -829,6 +832,74 @@ class CFGBuilder():
                         self.traverse(item)
             elif isinstance(value, ast.AST):
                 self.traverse(value)
+    
+    def visit_ExceptFinally(self, node):
+        print "this"
+        assert len(node.body) == 1
+        assert isinstance(node.body[0], ast.TryExcept)
+        try_block = self.new_try_block(statement=node.body[0])
+
+        if self.current_block.is_empty():
+            self.current_block = try_block
+        else:
+            self.current_block.add_exit(try_block)
+
+        after_tryblock = self.new_block()
+        stackobj = TryStackObject(try_block, after_tryblock, False, node)
+        self.try_stack.appendleft(stackobj)
+
+        stackobj.iter_state = TryEnum.EXCEPT
+        for child in node.body[0].handlers:
+            self.current_block = self.new_block(statement=child)
+            # If we encounter a raise statement during body iteration,
+            # we can link the raise block to the appropriate exception block (if any).
+            try:
+                try_block.except_blocks[
+                    None if child.type is None else child.type.id  # type: ignore
+                ] = self.current_block
+            except:
+                try_block.except_blocks[None] = self.current_block
+            self.traverse(child)
+
+        stackobj.iter_state = TryEnum.BODY
+        self.current_block = try_block
+        x = 0
+        for child1 in node.body[0].body:
+            print x
+            x = x+1
+            self.traverse(child1)
+        
+        if node.body[0].orelse:
+            stackobj.iter_state = TryEnum.ELSE
+            else_block = self.new_block()
+            self.current_block.add_exit(else_block)
+            self.current_block = else_block
+            for child2 in node.orelse:
+                self.traverse(child2)
+
+
+        self.current_block.add_exit(after_tryblock)
+        self.current_block = after_tryblock
+
+        if node.finalbody:
+            stackobj.iter_state = TryEnum.FINAL
+            for child3 in node.finalbody:
+                if isinstance(child3, ast.Raise):
+                    top = self.try_stack.popleft()
+                    self.traverse(child3)
+                    self.try_stack.appendleft(top)
+                    break
+                self.traverse(child3)
+            else:
+                next_block = self.new_block()
+                self.current_block.add_exit(next_block)
+                self.current_block = next_block
+
+        del self.try_stack[0]
+        
+
+
+
 
    
 def main(path, name):
