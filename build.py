@@ -172,7 +172,7 @@ class CFGBuilder():
             block.add_statement(statement)
         return block
 
-    def add_statement(self, block, node):
+    def add_statement(self, block, node, is_module =False):
         """
         Add a statement to a block.
 
@@ -181,6 +181,10 @@ class CFGBuilder():
             statement: An AST node representing the statement that must be
                        added to the current block.
         """
+        if is_module:
+            block.statements.append(node)
+            return
+
         s = as_code(node)
 
         if isinstance(node, ast.While):
@@ -191,6 +195,10 @@ class CFGBuilder():
             s = "if " + as_code(node.test) +":" 
         elif isinstance(node, ast.For):
             s = as_code(node).partition('\n')[0]
+        elif isinstance(node, ast.FunctionDef):
+            s = s.partition('\n')[0]
+        elif isinstance(node, ast.ClassDef):
+            s = s.partition('\n')[0]
         block.statements.append(s)
 
     def add_exit(self,block,nextblock,exitcase = None): #Union[Compare, None, ast.BoolOp, ast.expr]
@@ -350,7 +358,10 @@ class CFGBuilder():
             # next_block = self.new_block()
             # self.add_exit(self.current_block, next_block)
             # self.current_block = next_block
-            self.add_statement(self.current_block, node)
+            self.add_statement(self.current_block, name, is_module = True)
+            next_block = self.new_block()
+            self.add_exit(self.current_block, next_block)
+            self.current_block = next_block
             for child in node.body:
                 self.traverse(child)
 
@@ -834,7 +845,6 @@ class CFGBuilder():
                 self.traverse(value)
     
     def visit_ExceptFinally(self, node):
-        print "this"
         assert len(node.body) == 1
         assert isinstance(node.body[0], ast.TryExcept)
         try_block = self.new_try_block(statement=node.body[0])
@@ -863,10 +873,7 @@ class CFGBuilder():
 
         stackobj.iter_state = TryEnum.BODY
         self.current_block = try_block
-        x = 0
         for child1 in node.body[0].body:
-            print x
-            x = x+1
             self.traverse(child1)
         
         if node.body[0].orelse:
