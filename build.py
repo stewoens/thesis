@@ -421,14 +421,17 @@ class CFGBuilder():
             func = node.func
             func_name = visit_func(func)
             if isinstance(node, ast.Call):
+                print True
                 func_block = self.new_func_block()
                 self.add_statement(func_block, node)
                 func_block.name = func_name
 
                 if self._callbuf:
+                    print "02"
                     # Func block is argument of last block in self._callbuf
                     self._callbuf[-1].args.append(func_block)
                 else:
+                    print "03"
                     # Not inside argument context.
                     self.current_block.func_calls.append(func_name)
                     self.current_block.func_blocks.append(func_block)
