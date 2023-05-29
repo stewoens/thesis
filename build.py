@@ -918,23 +918,7 @@ def main(path, name):
     cfg = cfgb.build(tree, name)
 
     cfgs =[]
-    # # generate json
-    # uno = cfgb.show_blocks(cfg.entryblock, set(),mylist=[])
-    # funccfgs= []
-    
-    # for key in cfg.functioncfgs:
-    #     funccfgs.append(cfgb.show_blocks(cfg.functioncfgs[key].entryblock, set(),mylist=[]))
 
-    # classcfgs = []
-    # for key1 in cfg.classcfgs:
-    #     cd ={}
-    #     cd["class"] = cfgb.show_blocks(cfg.classcfgs[key1].entryblock, set(),mylist=[])
-    #     cd["functions"] =[]
-    #     for key2 in cfg.classcfgs[key1].functioncfgs:
-    #         cd["functions"].append(cfgb.show_blocks(cfg.classcfgs[key1].functioncfgs[key2].entryblock, set(),mylist=[]))
-    #     classcfgs.append(cd)
-
-    # return {'cfg': uno, 'classcfgs': classcfgs,'functioncfgs': funccfgs}
 
     uno = cfgb.show_blocks(cfg.entryblock, set(),mylist=[])
     cfgs.append(uno)
