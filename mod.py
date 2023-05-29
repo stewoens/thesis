@@ -3,6 +3,7 @@ import ast
 from parse_cfg_test import parse_node
 from astprint import as_tree, as_code
 from typing import Any, Deque, Tuple, List, Optional, Iterator, Set, Dict
+from collections import Counter, deque
 
 class Block(object):
     """
@@ -113,7 +114,6 @@ class Block(object):
         dict = {"id": id,"statements": text, "children": children } #"type": typ
 
         return dict
-
 
 class Link(object):
     """
@@ -254,6 +254,45 @@ class CFG(object):
                 to_visit.append(exit_.target)
             yield block
 
+    def reset_ids(self):
+        visited = set()
+        if self.entryblock is None:
+            raise TypeError(
+                "Expected self.entryblock to be not None but type is None"
+            )
+        to_visit = deque([self.entryblock])
+        id = 1
+        while to_visit:
+            block = to_visit.popleft()
+            visited.add(block)
+            block.id = id
+            id = id +1
+            for exit_ in block.exits:
+                if exit_.target in visited or exit_.target in to_visit:
+                    continue
+                to_visit.append(exit_.target)
+        
+    def seq(self):
+        visited = set()
+        statements = []
+        edges = []
+
+        if self.entryblock is None:
+            raise TypeError(
+                "Expected self.entryblock to be not None but type is None"
+            )
+        to_visit = deque([self.entryblock])
+        while to_visit:
+            block = to_visit.popleft()
+            visited.add(block)
+            for exit_ in block.exits:
+                edges.append((block.id, exit_.target.id))
+                if exit_.target in visited or exit_.target in to_visit:
+                    continue
+                to_visit.append(exit_.target)
+            statements.append(block.statements)
+        
+        return statements, edges
 
 
 
