@@ -2,15 +2,12 @@
 Control flow graph builder.
 """
 import ast
-from parse_cfg_test import parse_node
-from ast import NodeVisitor as n
-from itertools import count
 from collections import defaultdict, deque
-from typing import Dict, List, Optional, DefaultDict, Deque, Set, Union
 from mod import Link, TryBlock, FuncBlock, Block, CFG
 import os
 import aenum
 from astprint import as_tree, as_code
+from generate_seq import sequentialize_cfgs
 
 test = r"C:/Users/ninas/OneDrive/Documents/UNI/Productive-Bachelors/example.py"
 
@@ -916,23 +913,10 @@ def main(path, name):
     tree = ast.parse(read_file_to_string(path), path)
     cfgb = CFGBuilder()
     cfg = cfgb.build(tree, name)
+    print cfg
+    stmt_seq, e_seq = sequentialize_cfgs(cfg)
 
-    cfgs =[]
-
-
-    uno = cfgb.show_blocks(cfg.entryblock, set(),mylist=[])
-    cfgs.append(uno)
-
-    for key in cfg.functioncfgs:
-        cfgs.append(cfgb.show_blocks(cfg.functioncfgs[key].entryblock, set(),mylist=[]))
-
-    for key1 in cfg.classcfgs:
-        cfgs.append(cfgb.show_blocks(cfg.classcfgs[key1].entryblock, set(),mylist=[]))
-
-        for key2 in cfg.classcfgs[key1].functioncfgs:
-            cfgs.append(cfgb.show_blocks(cfg.classcfgs[key1].functioncfgs[key2].entryblock, set(),mylist=[]))
-
-    return cfgs
+    return stmt_seq,e_seq
 
 
 #main('\\\\?\\C:\\Users\\ninas\\OneDrive\\Documents\\UNI\\Productive-Bachelors\\DATA\\data2\\00\\wikihouse\\asset.py')
