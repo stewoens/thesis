@@ -15,7 +15,8 @@ test = r"C:/Users/ninas/OneDrive/Documents/UNI/Productive-Bachelors/examples"
 full_out ='OUTPUT/full_data.json'
 sample_out = 'OUTPUT/sample_data.json'
 example_out = 'OUTPUT/example.json'
-
+out_cfg = 'OUTPUT/cfgs.json'
+out_edges = 'OUTPUT/edges.json'
 size = 50
 
 def prep_path(path):
@@ -34,28 +35,32 @@ def test_path_prep():
 
 def data_parser_cfg():
     i = 0
-    with open(example_out,'w') as out, open('OUTPUT/errorlog.txt', 'w') as errorlog :
-        for root, _, files in os.walk(test):
+    with open(out_cfg,'w') as f_c, open(out_edges, 'w') as f_e, open('OUTPUT/errorlog.txt', 'w') as errorlog :
+        for root, _, files in os.walk(data):
             for file in files:
-                if i > size:
-                     print "finished :)"
-                     return
+                # if i > size:
+                #      print "finished :)"
+                #      return
                 path = prep_path(os.path.join(root, file))
                 try:
                     with open(path, 'r', )as f:
-                        cfg_data = main(path,name=file)
+                        cfgs, edges = main(path,name=file)
+                        assert len(cfgs) == len(edges)
 
-                        print >>out, json.dumps(cfg_data)
+                        for cfg, e in zip(cfgs, edges):
+                            if len(e)<3:
+                                continue
+                            print >>f_c, json.dumps(cfg)
+                            print >>f_e, json.dumps(e)
                         i = i+1
-                        if (float(i)*100 /size) % 5 == 0:
-                            print str(i*100 /size) + " percent"
+                        if  i % 15000 == 0:
+                            print i /1500 + " percent"
                         
                 except Exception as e:
                     i+=1
                     errorlog.write(path + " " + str(e) + "\n")
-                    errorlog.write(traceback.format_exc() + "\n")
-                    if  str(e) =="'Call' object has no attribute 'id'":
-                        continue
+                    # if  str(e) =="'Call' object has no attribute 'id'":
+                    #     continue
     return
 
 data_parser_cfg()
