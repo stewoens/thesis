@@ -1,5 +1,9 @@
+x = "This is a module"
+
+
 class new_class():
     def __init__(self, id, value):
+        print "this is a function"
         self.id = id
         self.value =value
 
@@ -10,6 +14,4 @@ class new_class():
             else:
                 print i
     
-    print "woohoo class"
-    x = 7 
-    y =8
+    print "This is a class"

@@ -17,7 +17,7 @@ sample_out = 'OUTPUT/sample_data.json'
 example_out = 'OUTPUT/example.json'
 out_cfg = 'OUTPUT/cfgs.json'
 out_edges = 'OUTPUT/edges.json'
-size = 50
+size = 500
 
 def prep_path(path):
     x = '\\\\?\\' + path.replace('/','\\')
@@ -38,9 +38,9 @@ def data_parser_cfg():
     with open(out_cfg,'w') as f_c, open(out_edges, 'w') as f_e, open('OUTPUT/errorlog.txt', 'w') as errorlog :
         for root, _, files in os.walk(data):
             for file in files:
-                # if i > size:
-                #      print "finished :)"
-                #      return
+                if i > size:
+                     print "finished :)"
+                     return
                 path = prep_path(os.path.join(root, file))
                 try:
                     with open(path, 'r', )as f:
@@ -52,9 +52,8 @@ def data_parser_cfg():
                                 continue
                             print >>f_c, json.dumps(cfg)
                             print >>f_e, json.dumps(e)
-                        i = i+1
-                        if  i % 15000 == 0:
-                            print i /1500 + " percent"
+                    i = i+1
+
                         
                 except Exception as e:
                     i+=1

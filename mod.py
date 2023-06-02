@@ -292,7 +292,7 @@ class CFG(object):
                 to_visit.append(exit_.target)
             statements.append(block.statements)
         
-        return statements, edges
+        return statements + ["<>"] + edges
 
 
 

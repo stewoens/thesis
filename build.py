@@ -250,7 +250,7 @@ class CFGBuilder():
         class_body = ast.Module(body=node.body)
         class_builder = CFGBuilder(self.isShort, self._treebuf)
         self.cfg.classcfgs[node.name]= classcfg = class_builder.build(
-            tree=class_body,path= node.name, entry_id= self.current_id
+            tree=class_body,path= "class", entry_id= self.current_id
         )
         classcfg.lineno = node.lineno
 #        classcfg.end_lineno = node.end_lineno  # type: ignore  #TODO something with ignore "'ClassDef' object has no attribute 'end_lineno'"
@@ -271,7 +271,7 @@ class CFGBuilder():
         # added to the function CFGs of the current CFG.
         func_body = ast.Module(body=node.body)
         func_builder = CFGBuilder(self.isShort, self._treebuf)
-        cfg = self.cfg.functioncfgs[node.name]= func_builder.build(tree= func_body, path=node.name,entry_id= self.current_id)
+        cfg = self.cfg.functioncfgs[node.name]= func_builder.build(tree= func_body, path="function",entry_id= self.current_id)
         self.current_id = func_builder.current_id + 1
         cfg.lineno = node.lineno
         #cfg.end_lineno = node.end_lineno  # type: ignore   #TODO
@@ -906,13 +906,13 @@ class CFGBuilder():
 
 
    
-def main(path, name):
+def main(path):
     tree = ast.parse(read_file_to_string(path), path)
     cfgb = CFGBuilder()
-    cfg = cfgb.build(tree, name)
-    stmt_seq, e_seq = sequentialize_cfgs(cfg)
+    cfg = cfgb.build(tree, "module")
+    seq = sequentialize_cfgs(cfg)
 
-    return stmt_seq,e_seq
+    return seq
 
 
 #main('\\\\?\\C:\\Users\\ninas\\OneDrive\\Documents\\UNI\\Productive-Bachelors\\DATA\\data2\\00\\wikihouse\\asset.py')

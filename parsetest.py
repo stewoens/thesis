@@ -21,15 +21,11 @@ def prep_path(path):
 
 def data_parser_cfg():
     path = prep_path(test)
-    with open(cfg_file, 'w') as out_cfg, open('OUTPUT/errorlog.txt', 'w') as errorlog, open(path, 'r', )as f, open (edges_file, 'w') as out_edges:
-
+    with open(cfg_file, 'w') as out_cfg, open('OUTPUT/errorlog.txt', 'w') as errorlog, open(path, 'r', )as f:
         try:
-            cfgs, edges = main(path,name=case)
-            assert len(cfgs) == len(edges)
+            cfgs = main(path)
             for cfg in cfgs:
                 print >>out_cfg, json.dumps(cfg)
-            for e in edges:
-                print >>out_edges, json.dumps(e)
                 
         except Exception as e:
             errorlog.write(str(e) + "\n")

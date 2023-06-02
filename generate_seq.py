@@ -2,15 +2,15 @@ import ast
 from mod import Link, TryBlock, FuncBlock, Block, CFG
 
 cfgs = []
-edges = []
+
 
 
 def seq_cfg(cfg):
     # main cfg
     cfg.reset_ids()
-    stmt, e = cfg.seq()
-    cfgs.append(stmt)
-    edges.append(e)
+    seq = cfg.seq()
+    print seq
+    cfgs.append(seq)
 
 
 def sequentialize_cfgs(cfg):
@@ -24,4 +24,4 @@ def sequentialize_cfgs(cfg):
         for fgraph in cgraph.functioncfgs.values():
             seq_cfg(fgraph)
 
-    return cfgs, edges
+    return cfgs
