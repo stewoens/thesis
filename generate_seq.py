@@ -1,19 +1,18 @@
 import ast
 from mod import Link, TryBlock, FuncBlock, Block, CFG
 
-cfgs = []
 
 
 
-def seq_cfg(cfg):
-    # main cfg
-    cfg.reset_ids()
-    seq = cfg.seq()
-    print seq
-    cfgs.append(seq)
+
 
 
 def sequentialize_cfgs(cfg):
+    cfgs = []
+    def seq_cfg(cfg):
+        cfg.reset_ids()
+        seq = cfg.seq()
+        cfgs.append(seq)
 
     seq_cfg(cfg)
     

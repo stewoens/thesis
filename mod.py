@@ -1,6 +1,5 @@
 
 import ast
-from parse_cfg_test import parse_node
 from astprint import as_tree, as_code
 from typing import Any, Deque, Tuple, List, Optional, Iterator, Set, Dict
 from collections import Counter, deque

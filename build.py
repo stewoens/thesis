@@ -913,7 +913,3 @@ def main(path):
     seq = sequentialize_cfgs(cfg)
 
     return seq
-
-
-#main('\\\\?\\C:\\Users\\ninas\\OneDrive\\Documents\\UNI\\Productive-Bachelors\\DATA\\data2\\00\\wikihouse\\asset.py')
-#main('\\\\?\\C:\\Users\\ninas\\OneDrive\\Documents\\UNI\\Productive-Bachelors\\example.py')
