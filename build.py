@@ -134,6 +134,16 @@ class CFGBuilder():
         self.cfg.entryblock = self.current_block
         self.traverse(tree,path)
         self.clean_cfg(self.cfg.entryblock, set())
+
+        for func in self.cfg.functioncfgs.values():
+            self.clean_cfg(func.entryblock,set())
+            
+        for cl in self.cfg.classcfgs.values():
+            self.clean_cfg(cl.entryblock,set())
+            for func in cl.functioncfgs.values():
+                self.clean_cfg(func.entryblock,set())
+
+        self.clean_cfg(self.cfg.entryblock, set())
         return self.cfg
     
 
