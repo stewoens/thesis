@@ -3,11 +3,12 @@
 /OUTPUT
 /ORIGINALS
 /3to2
+/astprint
 /py2cfg-original
 **/*.pyc
 /.vscode
 example.py
-/astprint
+
 
 
 
