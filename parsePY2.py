@@ -10,16 +10,16 @@ import json
 
 data = "/storage/data/data/"
 out_json ='/storage/cfg_data.json'
-size = 50000
+size = 50
 
 def data_parser_cfg():
     i = 0
     with open(out_json,'w') as out, open('OUTPUT/errorlog.txt', 'w') as errorlog :
         for root, _, files in os.walk(data):
             for file in files:
-                if i > size:
-                     print "finished :)"
-                     return
+                # if i > size:
+                #      print "finished :)"
+                #      return
                 path = os.path.join(root, file)
                 try:
                     cfgs = main(path)
